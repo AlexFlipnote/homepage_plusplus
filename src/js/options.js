@@ -32,6 +32,7 @@ function saveOptions(message, css="") {
 
   chrome.storage.local.set({
     language: document.getElementById("language").value,
+    animations: document.getElementById("animations").checked,
     custombg: custombg,
     show_time: document.getElementById("show_time").checked,
     show_date: document.getElementById("show_date").checked,
@@ -85,6 +86,10 @@ function restoreOptions() {
     const language = document.getElementById("language")
     language.value = items.language
     language.onchange = () => { saveOptions(`Language changed: ${language.value || "default"}`, "change") }
+
+    const animations = document.getElementById("animations")
+    animations.checked = items.animations
+    animations.onchange = () => { saveOptions(`Animations set: ${animations.checked}`, animations.checked ? "add" : "remove") }
 
     const showTime = document.getElementById("show_time")
     showTime.checked = items.show_time

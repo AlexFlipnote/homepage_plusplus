@@ -253,6 +253,18 @@ body {
   -webkit-user-select: none;
 }
 
+.no-animations {
+  .time-container,
+  #search-form,
+  #weather-container,
+  #bookmarks,
+  #background {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+  }
+}
+
 .no-overflow { overflow: hidden; }
 .no-margin { margin: 0; }
 .no-padding { padding: 0; }
@@ -269,3 +281,4 @@ body {
 .warning-bg { background-color: var(--warning) !important; }
 .error-bg { background-color: var(--error) !important; }
 .grey-bg { background-color: var(--grey) !important; }
+

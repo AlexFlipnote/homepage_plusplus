@@ -72,6 +72,10 @@ if (isExtension) {
   }
 
   chrome.storage.local.get({ ...extensionSettings }, function(items) {
+    if (!items.animations) {
+      document.body.classList.add("no-animations")
+    }
+
     // Start by setting language
     setLocale(items.language)
     const defaultTime = translate(items.language, "time.format.default")
