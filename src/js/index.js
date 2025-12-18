@@ -177,6 +177,7 @@ if (isExtension) {
 
 } else {
   console.log("ℹ️ Running in demo mode")
+  document.body.classList.add("no-animations")
   // Demo mode
 
   const wname = document.getElementById("wname")
