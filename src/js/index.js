@@ -192,7 +192,7 @@ if (isExtension) {
 
   // Create some boiler plate bookmarks
   const bookmarksList = document.getElementById("bookmarks")
-  createBookmark(bookmarksList, "Github", "https://github.com/AlexFlipnote/homepageplusplus", {
+  createBookmark(bookmarksList, "Github", "https://github.com/AlexFlipnote/homepage_plusplus", {
     localFavicon: "images/icons/github.png"
   })
   createBookmark(bookmarksList, "Discord", "https://discord.gg/yqb7vATbjH", {

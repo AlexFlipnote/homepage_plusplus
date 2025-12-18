@@ -3,7 +3,7 @@
 
   "name": "Homepage++",
   "description": "A website that gives you a clean homepage.",
-  "homepage_url": "https://alexflipnote.dev/homepageplusplus/",
+  "homepage_url": "https://alexflipnote.dev/homepage_plusplus/",
   "version": "2.5.0",
 
   "chrome_url_overrides": {
