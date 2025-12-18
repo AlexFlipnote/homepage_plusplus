@@ -18,8 +18,12 @@ class WeatherData {
 
 export async function getWeather(items, position, lang) {
   const cache = new Cache()
+
   const pos = position.coords
-  const cacheKey = `weatherLocation_${pos.latitude}_${pos.longitude}`
+  const posPrefix = `${pos.latitude.toFixed(2)},${pos.longitude.toFixed(2)}`
+
+  const weatherCacheKey = `weatherData_${posPrefix}`
+  const locationCacheKey = `weatherLocation_${posPrefix}`
 
   const wtemp = document.getElementById("wtemp")
   const wname = document.getElementById("wname")
@@ -32,12 +36,24 @@ export async function getWeather(items, position, lang) {
     }
   }
 
-  const weatherResponse = await http(
-    "GET",
-    `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${pos.latitude}&lon=${pos.longitude}`
-  )
+  // Check if weather data is cached (5 minutes)
+  const cachedWeather = await cache.get(weatherCacheKey)
 
-  const weatherData = new WeatherData(weatherResponse.properties.timeseries[0].data, lang || "en")
+  let weatherData
+  if (cachedWeather) {
+    console.log("📦 Cache: Fetched weather data from cache")
+    weatherData = new WeatherData(cachedWeather, lang || "en")
+  } else {
+    const weatherResponse = await http(
+      "GET",
+      `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${pos.latitude}&lon=${pos.longitude}`
+    )
+    const weatherDataRaw = weatherResponse.properties.timeseries[0].data
+    weatherData = new WeatherData(weatherDataRaw, lang || "en")
+    // Cache weather data for 5 minutes (300 seconds)
+    cache.set(weatherCacheKey, weatherDataRaw, 300)
+  }
+
   document.getElementById("wicon").src = `images/weather/${weatherData.symbol_code}.png`
   document.getElementById("wdescription").innerText = weatherData.prettyName()
   if (items.temp_type === "fahrenheit") {
@@ -48,7 +64,7 @@ export async function getWeather(items, position, lang) {
   showWeatherContainer()
 
   // OpenStreetMap API can be rate limited, so we cache the location name for 1 hour
-  const weatherLocation = await cache.get(cacheKey)
+  const weatherLocation = await cache.get(locationCacheKey)
 
   if (weatherLocation) {
     console.log("📦 Cache: Fetched location name from cache")
@@ -65,7 +81,7 @@ export async function getWeather(items, position, lang) {
       "Unknown Location"
   )
   showWeatherContainer()
-  cache.set(cacheKey, wname.innerText)
+  cache.set(locationCacheKey, wname.innerText)
 
 }
 

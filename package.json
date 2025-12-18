@@ -1,7 +1,7 @@
 {
-  "name": "alexflipnote_homepage",
+  "name": "homepageplusplus",
   "author": "AlexFlipnote",
-  "homepage": "https://alexflipnote.dev/homepage/",
+  "homepage": "https://alexflipnote.dev/homepageplusplus/",
   "type": "module",
   "scripts": {
     "clean": "node build.js clean",

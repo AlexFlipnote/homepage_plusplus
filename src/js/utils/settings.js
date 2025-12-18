@@ -3,7 +3,7 @@
 export const extensionSettings = {
   language: "",
   searchbar: false,
-  animations: true,
+  animations: false,
   custombg: [],
   show_time: true,
   show_date: true,

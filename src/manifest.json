@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
 
-  "name": "AlexFlipnote/Homepage",
+  "name": "Homepage++",
   "description": "A website that gives you a clean homepage.",
-  "homepage_url": "https://alexflipnote.dev/homepage/",
-  "version": "2.4.3",
+  "homepage_url": "https://alexflipnote.dev/homepageplusplus/",
+  "version": "2.5.0",
 
   "chrome_url_overrides": {
     "newtab": "index.html"

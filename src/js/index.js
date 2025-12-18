@@ -34,6 +34,7 @@ function createBookmark(
 ) {
   const container = document.createElement("a")
   container.href = url
+  container.title = name
 
   if (isAuto) {
     container.setAttribute("data-auto", "true")
@@ -191,7 +192,7 @@ if (isExtension) {
 
   // Create some boiler plate bookmarks
   const bookmarksList = document.getElementById("bookmarks")
-  createBookmark(bookmarksList, "Github", "https://github.com/AlexFlipnote/homepage", {
+  createBookmark(bookmarksList, "Github", "https://github.com/AlexFlipnote/homepageplusplus", {
     localFavicon: "images/icons/github.png"
   })
   createBookmark(bookmarksList, "Discord", "https://discord.gg/yqb7vATbjH", {

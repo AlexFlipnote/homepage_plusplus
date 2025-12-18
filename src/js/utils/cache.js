@@ -13,11 +13,32 @@ export class Cache {
   }
 
   /**
+   * Purge expired items from the cache
+   */
+  async purgeExpired() {
+    const store = await this._getStore()
+    const now = Date.now()
+    let modified = false
+    for (const key in store) {
+      const item = store[key]
+      if (item.expiry && now > item.expiry) {
+        delete store[key]
+        modified = true
+      }
+    }
+    if (modified) {
+      await chrome.storage.local.set({ [this.rootKey]: store })
+    }
+  }
+
+  /**
    * Get a value inside the cache object
    * @param {string} key - The sub-key (e.g., 'profile')
    * @returns {any} The cached data or null if not found/expired
    */
   async get(key) {
+    await this.purgeExpired()
+
     const store = await this._getStore()
     const item = store[key]
 
