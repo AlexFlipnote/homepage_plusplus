@@ -7,7 +7,7 @@ Goal is to make it as lightweight as possible, meaning no unnecessary bloat or d
 > If you want to test it out before downloading it, you can visit https://alexflipnote.dev/homepage_plusplus which is the demo page. Some of the functions are available to test, but not all of them for obvious reasons.
 
 ## Platforms
-- [Chrome](https://chromewebstore.google.com/detail/alexflipnotehomepage/npagigfpfilcemncemkphndcaigegcbk) (or literally any* Chromium-based browser)
+- [Chrome](https://chromewebstore.google.com/detail/npagigfpfilcemncemkphndcaigegcbk) (or literally any* Chromium-based browser)
 - [Firefox](https://addons.mozilla.org/addon/alexflipnote-homepage/)
 
 > [!WARNING]

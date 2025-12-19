@@ -302,7 +302,7 @@ if (isExtension) {
   // Add a nice install button
   function downloadButton(language=undefined) {
     let browser = "Chrome"
-    let link = "https://chromewebstore.google.com/detail/alexflipnotehomepage/npagigfpfilcemncemkphndcaigegcbk"
+    let link = "https://chromewebstore.google.com/detail/npagigfpfilcemncemkphndcaigegcbk"
 
     if (isFirefox) {
       browser = "Firefox"
