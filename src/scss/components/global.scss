@@ -20,6 +20,7 @@
 html, body {
   height: 100%;
   margin: 0 auto;
+  background-color: var(--highlight);
 }
 
 details {
@@ -255,6 +256,7 @@ body {
 
 .no-animations {
   .time-container,
+  #time, #date,
   #search-form,
   #weather-container,
   #bookmarks,
