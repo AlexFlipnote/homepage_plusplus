@@ -18,6 +18,12 @@
   .details {
     display: flex;
     flex-direction: column;
+
+    .temp-container {
+      display: flex;
+      flex-direction: row;
+      gap: 0.5rem;
+    }
   }
 
   p {
