@@ -23,12 +23,14 @@
           </select>
         </label>
         <div class="flex-grid">
-          <div class="col-xs">
+          <div class="col-xs-6">
             <label><input type="checkbox" id="show-settings"> Show settings button</label>
+            <label><input type="checkbox" id="animations"> Enable animations</label>
+          </div>
+          <div class="col-xs-6">
             <label><input type="checkbox" id="searchbar"> Show search bar</label>
             <label><input type="checkbox" id="show_time"> Show time</label>
             <label><input type="checkbox" id="show_date"> Show date</label>
-            <label><input type="checkbox" id="animations"> Enable animations</label>
           </div>
         </div>
       </div>
@@ -39,15 +41,20 @@
           You can customize the time and date format using Python strftime format.<br>
           Leave empty to use the default format.
         </p>
-        <label class="column secondary-bg">
-          Time format:
-          <input id="fmt_time" class="secondary" placeholder="%H:%M:%S">
-
-        </label>
-        <label class="column secondary-bg">
-          Date format:
-          <input id="fmt_date" class="secondary" placeholder="%e. %B %Y">
-        </label>
+        <div class="flex-grid">
+          <div class="col-xs-6">
+            <label class="column secondary-bg">
+              Time format:
+              <input id="fmt_time" class="secondary" placeholder="%H:%M:%S">
+            </label>
+          </div>
+          <div class="col-xs-6">
+            <label class="column secondary-bg">
+              Date format:
+              <input id="fmt_date" class="secondary" placeholder="%e. %B %Y">
+            </label>
+          </div>
+        </div>
         <br>
         <details style="font-size: 1rem">
           <summary>Format reference</summary>
@@ -294,7 +301,7 @@
 
     </div>
 
-    <section id="notification">
+    <section id="settings-notification">
       <!--
         <div class="alert test">Testing the notification</div>
         <div class="alert test change">Testing size</div>

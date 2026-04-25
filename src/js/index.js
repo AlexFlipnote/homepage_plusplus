@@ -1,5 +1,5 @@
 import { isFirefox, isExtension } from "./utils/browser"
-import { extensionSettings } from "./utils/settings.js"
+import { extensionSettings } from "./options.js"
 import { getWeather } from "./utils/weather.js"
 import { HexClock, Clock } from "./utils/timeManager.js"
 import { availableLanguages, setLocale, translate, getLocale } from "./utils/i18n.js"

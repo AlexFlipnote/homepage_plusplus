@@ -1,11 +1,35 @@
 import * as manifest from "../manifest.json"
 import Sortable from "sortablejs"
 
-import { extensionSettings } from "./utils/settings.js"
 import { isFirefox } from "./utils/browser.js"
 import { WorldMap } from "./utils/openstreetmap.js"
 import { HexClock } from "./utils/timeManager.js"
 import { availableLanguages } from "./utils/i18n.js"
+
+export const extensionSettings = {
+  language: "",
+  searchbar: false,
+  animations: false,
+  custombg: [],
+  show_time: true,
+  show_date: true,
+  fmt_time: "",
+  fmt_date: "",
+  customfont: "",
+  customfontgoogle: false,
+  bookmarks: [],
+  bookmarksFavicon: false,
+  bookmarksTopSitesEnabled: false,
+  bookmarksTopSitesAmount: 5,
+  wEnable: false,
+  wlat: 0,
+  wlon: 0,
+  wManualLocation: false,
+  temp_type: "celcius",
+  hexbg: false,
+  showSettings: true,
+  customcss: ""
+}
 
 const findVersion = document.getElementById("version")
 if (findVersion) {
@@ -15,7 +39,7 @@ if (findVersion) {
 const userMap = new WorldMap()
 
 function createAlert(message, css="") {
-  const notification = document.getElementById("notification")
+  const notification = document.getElementById("settings-notification")
   const alert = document.createElement("div")
   alert.classList.add("alert")
   if (css) { alert.classList.add(css) }
@@ -29,6 +53,21 @@ function saveOptions(message, css="") {
   const custombg = []
   const custombgPreviews = document.getElementsByClassName("preview-image")
   for (var i = 0; i < custombgPreviews.length; i++) { custombg.push(custombgPreviews[i].src) }
+
+  function fetchBookmarkInputs() {
+    const blist = document.getElementById("blist")
+    const bookmarkItems = blist.getElementsByClassName("bookmark-item")
+    const bookmarks = []
+
+    for (var i = 0; i < bookmarkItems.length; i++) {
+      const bmEl = bookmarkItems[i]
+      const name = bmEl.getElementsByClassName("bookmark-name")[0].value
+      const url = bmEl.getElementsByClassName("bookmark-url")[0].value || "#"
+      bookmarks.push({ name: name, url: url })
+    }
+
+    return bookmarks
+  }
 
   chrome.storage.local.set({
     language: document.getElementById("language").value,
@@ -187,103 +226,6 @@ function restoreOptions() {
   })
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const languages = document.getElementById("language")
-  for (const [k, v] of Object.entries(availableLanguages({hideDefault: true}))) {
-    const option = document.createElement("option")
-    option.text = v
-    option.value = k
-    languages.appendChild(option)
-  }
-
-  // Show live demo
-  new HexClock(document.getElementById("hexbgdemobg"), {background:true}).start()
-  new HexClock(document.getElementById("hexbgdemotext"), {text:true}).start()
-
-  new Sortable(document.getElementById("blist"), {
-    animation: 150,
-    ghostClass: "sortable-ghost",
-    handle: ".drag",
-    onEnd: () => {
-      saveOptions("Reordered bookmarks", "change")
-    }
-  })
-})
-
-// CustomBG Appender
-document.getElementById("custombg_uploader").onchange = () => {
-  const allPreviews = document.getElementById("custombg_previews")
-
-  const files = document.getElementById("custombg_uploader").files
-
-  if (!files.length) { return }
-
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i]
-    const reader = new FileReader()
-
-    reader.addEventListener("load", () => {
-      const mbLimit = 1.5
-      const imageSizeMB = (reader.result.length * (3/4)) / (1024 * 1024)
-      if (imageSizeMB > mbLimit) {
-        createAlert(`Image is larger than ${mbLimit}MB and will not be uploaded.`, "remove")
-      } else {
-        createPreview(reader.result, allPreviews)
-        saveOptions("Added background image", "add")
-      }
-    }, false)
-
-    reader.readAsDataURL(file)
-  }
-
-  // When done, reset the input so the same file can be uploaded again if wanted
-  document.getElementById("custombg_uploader").value = ""
-}
-
-document.getElementById("add_bookmark").onclick = () => {
-  createBookmarkElement(
-    document.getElementById("bookmark_name").value || "New Bookmark",
-    document.getElementById("bookmark_url").value || "#"
-  )
-  document.getElementById("bookmark_name").value = ""
-  document.getElementById("bookmark_url").value = ""
-  saveOptions("Added new bookmark")
-}
-
-// CustomBG Remover
-document.body.onclick = function (ev) {
-  if (ev.target.getAttribute("class") == "preview-image") {
-    ev.target.remove()
-    saveOptions("Removed background image", "remove")
-  }
-}
-
-function custombgPrune() {
-  const custombgPreviews = document.getElementById("custombg_previews")
-  const findCustomBg = custombgPreviews.getElementsByClassName("preview-container")
-  if (findCustomBg.length == 0) { return }
-
-  while (findCustomBg.length > 0) {
-    findCustomBg[0].remove()
-  }
-
-  saveOptions("Deleted all background images", "remove")
-}
-
-function createPreview(image, target) {
-  const container = document.createElement("div")
-  container.classList.add("preview-container")
-
-  const preview = document.createElement("img")
-  preview.classList.add("preview-image")
-  preview.src = image
-
-  container.append(preview) // div -> img
-
-  const fileContainer = target.querySelector(".file-container")
-  fileContainer.before(container)
-}
-
 function createBookmarkElement(bkey, burl) {
   const blist = document.getElementById("blist")
   const container = document.createElement("div")
@@ -322,20 +264,105 @@ function createBookmarkElement(bkey, burl) {
   blist.appendChild(container)
 }
 
-function fetchBookmarkInputs() {
-  const blist = document.getElementById("blist")
-  const bookmarkItems = blist.getElementsByClassName("bookmark-item")
-  const bookmarks = []
+function createPreview(image, target) {
+  const container = document.createElement("div")
+  container.classList.add("preview-container")
 
-  for (var i = 0; i < bookmarkItems.length; i++) {
-    const bmEl = bookmarkItems[i]
-    const name = bmEl.getElementsByClassName("bookmark-name")[0].value
-    const url = bmEl.getElementsByClassName("bookmark-url")[0].value || "#"
-    bookmarks.push({ name: name, url: url })
-  }
+  const preview = document.createElement("img")
+  preview.classList.add("preview-image")
+  preview.src = image
 
-  return bookmarks
+  container.append(preview) // div -> img
+
+  const fileContainer = target.querySelector(".file-container")
+  fileContainer.before(container)
 }
 
-document.addEventListener("DOMContentLoaded", restoreOptions)
-document.getElementById("custombg_prune").addEventListener("click", custombgPrune)
+// This part of the code loads only when touching options.html
+if (document.getElementById("settings-notification")) {
+  document.addEventListener("DOMContentLoaded", () => {
+    const languages = document.getElementById("language")
+    for (const [k, v] of Object.entries(availableLanguages({hideDefault: true}))) {
+      const option = document.createElement("option")
+      option.text = v
+      option.value = k
+      languages.appendChild(option)
+    }
+
+    // Show live demo
+    new HexClock(document.getElementById("hexbgdemobg"), {background:true}).start()
+    new HexClock(document.getElementById("hexbgdemotext"), {text:true}).start()
+
+    new Sortable(document.getElementById("blist"), {
+      animation: 150,
+      ghostClass: "sortable-ghost",
+      handle: ".drag",
+      onEnd: () => {
+        saveOptions("Reordered bookmarks", "change")
+      }
+    })
+  })
+
+  // CustomBG Appender
+  document.getElementById("custombg_uploader").onchange = () => {
+    const allPreviews = document.getElementById("custombg_previews")
+
+    const files = document.getElementById("custombg_uploader").files
+
+    if (!files.length) { return }
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      const reader = new FileReader()
+
+      reader.addEventListener("load", () => {
+        const mbLimit = 1.5
+        const imageSizeMB = (reader.result.length * (3/4)) / (1024 * 1024)
+        if (imageSizeMB > mbLimit) {
+          createAlert(`Image is larger than ${mbLimit}MB and will not be uploaded.`, "remove")
+        } else {
+          createPreview(reader.result, allPreviews)
+          saveOptions("Added background image", "add")
+        }
+      }, false)
+
+      reader.readAsDataURL(file)
+    }
+
+    // When done, reset the input so the same file can be uploaded again if wanted
+    document.getElementById("custombg_uploader").value = ""
+  }
+
+  document.getElementById("add_bookmark").onclick = () => {
+    createBookmarkElement(
+      document.getElementById("bookmark_name").value || "New Bookmark",
+      document.getElementById("bookmark_url").value || "#"
+    )
+    document.getElementById("bookmark_name").value = ""
+    document.getElementById("bookmark_url").value = ""
+    saveOptions("Added new bookmark")
+  }
+
+  // CustomBG Remover
+  document.body.onclick = function (ev) {
+    if (ev.target.getAttribute("class") == "preview-image") {
+      ev.target.remove()
+      saveOptions("Removed background image", "remove")
+    }
+  }
+
+  function custombgPrune() {
+    const custombgPreviews = document.getElementById("custombg_previews")
+    const findCustomBg = custombgPreviews.getElementsByClassName("preview-container")
+    if (findCustomBg.length == 0) { return }
+
+    while (findCustomBg.length > 0) {
+      findCustomBg[0].remove()
+    }
+
+    saveOptions("Deleted all background images", "remove")
+  }
+
+  document.addEventListener("DOMContentLoaded", restoreOptions)
+  document.getElementById("custombg_prune").addEventListener("click", custombgPrune)
+}
