@@ -275,7 +275,7 @@ if (isExtension) {
   }
 
   // Change clock format
-  document.getElementById("changeClock").onchange = (el) => {
+  document.getElementById("changeClock").oninput = (el) => {
     const format = el.target.value
     if (format) {
       timeClock.changeFormat(format)
@@ -285,7 +285,7 @@ if (isExtension) {
   }
 
   // Change date format
-  document.getElementById("changeDate").onchange = (el) => {
+  document.getElementById("changeDate").oninput = (el) => {
     const format = el.target.value
     if (format) {
       dateClock.changeFormat(format)

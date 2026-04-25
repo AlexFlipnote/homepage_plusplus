@@ -11,7 +11,7 @@
     <div class="text-center container">
       <div class="header-container">
         <img src="images/logo.png" alt="Homepage Logo">
-        <h1>Homepage++ settings <i>(v<span id="version"></span>)</i></h1>
+        <h1>Homepage++ settings <span id="version-label"></span></h1>
       </div>
 
       <div class="box-container">
@@ -225,15 +225,15 @@
         <label>
           <input type="checkbox" id="wEnable"> Enable weather (Source: <a href="https://api.met.no/" target="_blank">MET Norway</a>)
         </label>
+        <label>
+          <input type="checkbox" id="wManualLocation"> Pick a location manually instead
+        </label>
         <label class="column secondary-bg">
           Temperature type:
           <select id="temp_type">
             <option value="celcius">Celsius (°C)</option>
             <option value="fahrenheit">Fahrenheit (°F)</option>
           </select>
-        </label>
-        <label>
-          <input type="checkbox" id="wManualLocation"> Pick a location manually instead
         </label>
         <div id="map">
           <div class="map-coords">
@@ -300,6 +300,9 @@
       </div>
 
     </div>
+
+    <!-- Very cool spacer lmao -->
+    <div style="padding: .1rem 0"></div>
 
     <section id="settings-notification">
       <!--

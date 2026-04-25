@@ -31,9 +31,10 @@ export const extensionSettings = {
   customcss: ""
 }
 
-const findVersion = document.getElementById("version")
+// We don't care where it loads, if it finds it, replace it
+const findVersion = document.getElementById("version-label")
 if (findVersion) {
-  findVersion.textContent = manifest.version
+  findVersion.textContent = `v${manifest.version}`
 }
 
 const userMap = new WorldMap()
