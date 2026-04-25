@@ -90,7 +90,7 @@ class MetNoWeather {
     const weatherDataRaw = weatherResponse.properties.timeseries
     const now = new Date()
     const futureIdx = weatherDataRaw.findIndex(entry => new Date(entry.time) > now)
-    const startIndex = futureIdx <= 0 ? 0 : futureIdx - 1
+    const startIndex = futureIdx > 0 ? futureIdx - 1 : 0
     const slicedData = weatherDataRaw.slice(startIndex, startIndex + 6)
     this.updateEntries(slicedData)
     // Cache weather data for 5 minutes (300 seconds)
