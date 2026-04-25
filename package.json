@@ -4,16 +4,15 @@
   "homepage": "https://alexflipnote.dev/homepage_plusplus/",
   "type": "module",
   "scripts": {
-    "clean": "node build.js clean",
-    "build:assets": "node build.js assets",
-    "build:css": "node build.js css",
-    "build:js": "node build.js js",
-    "build:zip": "node build.js zip",
-    "build": "node build.js"
+    "dev": "node build.js watch",
+    "build": "node build.js zip",
+    "run": "node build.js",
+    "clean": "node build.js clean"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
-    "sortablejs": "^1.15.6"
+    "sortablejs": "^1.15.6",
+    "tz-lookup": "^6.1.25"
   },
   "devDependencies": {
     "archiver": "^7.0.1",

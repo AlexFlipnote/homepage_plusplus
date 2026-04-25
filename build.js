@@ -9,134 +9,157 @@ import { fileURLToPath } from "url"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-async function cleanUp() {
-  console.log("🧹 Cleaning up build files...")
-  const foldersDelete = ["out", "dist"]
-  foldersDelete.forEach(folder => {
-    fs.rm(path.join(__dirname, folder), { recursive: true, force: true }, (err) => {
-      if (err) {
-        // Ignore errors
-      }
-    })
+const jsBuildConfigs = [
+  { entryPoints: ["src/js/index.js"], outfile: "out/js/index.js" },
+  { entryPoints: ["src/js/options.js"], outfile: "out/js/options.js" }
+]
+
+const esbuildOptions = (cfg, overrides = {}) => ({
+  bundle: true,
+  format: "iife",
+  minify: true,
+  sourcemap: false,
+  target: ["es2017"],
+  alias: {
+    "@": path.join(__dirname, "src"),
+    "@i18n": path.join(__dirname, "i18n")
+  },
+  ...cfg,
+  ...overrides
+})
+
+function log(type, message) {
+  const now = new Date()
+  const pad = (num) => String(num).padStart(2, "0")
+  const formattedDate =
+    now.getFullYear() + "-" +
+    pad(now.getMonth() + 1) + "-" +
+    pad(now.getDate()) + " " +
+    pad(now.getHours()) + ":" +
+    pad(now.getMinutes()) + ":" +
+    pad(now.getSeconds())
+
+  console.log(`[ ${type.padStart(5)} ] ${formattedDate} ${message}`)
+}
+
+function ensureFolders(...folders) {
+  folders.forEach(folder => {
+    if (!fs.existsSync(path.join(__dirname, folder)))
+      fs.mkdirSync(path.join(__dirname, folder), { recursive: true })
   })
-  console.log("🧹 Cleanup complete")
+}
+
+async function clean() {
+  log("CLEAN", "Removing build folders...")
+  for (const folder of ["out", "dist"])
+    await fs.promises.rm(path.join(__dirname, folder), { recursive: true, force: true })
+  log("CLEAN", "Done")
 }
 
 async function copyAssets() {
-  console.log("📋 Copying asset files...")
-
+  log("ASSET", "Copying assets...")
   const files = fs.readdirSync(path.join(__dirname, "src"), { withFileTypes: true })
   files.forEach(file => {
-    if (file.isFile() && (file.name.endsWith(".html") || file.name.endsWith(".json"))) {
-      fs.copyFileSync(
-        path.join(__dirname, "src", file.name),
-        path.join(__dirname, "out", file.name)
-      )
-    }
+    if (file.isFile() && (file.name.endsWith(".html") || file.name.endsWith(".json")))
+      fs.copyFileSync(path.join(__dirname, "src", file.name), path.join(__dirname, "out", file.name))
   })
-
-  const srcImages = path.join(__dirname, "src", "images")
-  const outImages = path.join(__dirname, "out", "images")
-
-  fs.cpSync(srcImages, outImages, { recursive: true })
-  console.log("📋 Asset copy complete")
+  fs.cpSync(path.join(__dirname, "src", "images"), path.join(__dirname, "out", "images"), { recursive: true })
+  log("ASSET", "Done copying assets")
 }
 
-async function buildJS() {
-  console.log("📦 Building JavaScript files...")
-
-  const builds = [
-    { entryPoints: ["src/js/index.js"], outfile: "out/js/index.js" },
-    { entryPoints: ["src/js/options.js"], outfile: "out/js/options.js" }
-  ]
-
-  await Promise.all(
-    builds.map(cfg => esbuild.build({
-      bundle: true,
-      format: "iife",
-      minify: true,
-      sourcemap: false,
-      target: ["es2017"],
-      alias: {
-        "@": path.join(__dirname, "src"),
-        "@i18n": path.join(__dirname, "i18n")
-      },
-      ...cfg
-    }))
-  )
-  console.log("📦 JS build complete")
+async function buildJS(overrides = {}) {
+  log("JS", "Building JS...")
+  await Promise.all(jsBuildConfigs.map(cfg => esbuild.build(esbuildOptions(cfg, overrides))))
+  log("JS", "Done building the JS")
 }
 
-async function buildSASS() {
-  console.log("🎨 Building SCSS files...")
+async function buildCSS() {
+  log("CSS", "Converting SCSS to CSS")
   const result = sass.compile(path.join(__dirname, "src/scss/index.scss"), { style: "compressed" })
-  const outputFile = path.join(__dirname, "out/css", "index.css")
+  const outputFile = path.join(__dirname, "out/css/index.css")
   fs.mkdirSync(path.dirname(outputFile), { recursive: true })
   fs.writeFileSync(outputFile, result.css)
-  console.log("🎨 SCSS build complete")
+  log("CSS", "Done building the CSS")
 }
 
-async function createZip() {
-  console.log("🗜️ Creating ZIP archive...")
+async function build() {
+  await copyAssets()
+  await buildJS()
+  await buildCSS()
+}
 
+async function zip() {
+  await build()
+
+  log("ZIP", "Creating archives...")
   const timestamp = Math.floor(Date.now() / 1000)
-  const zipPublic = `plugin_${timestamp}.zip`
-  const zipSource = `source_${timestamp}.zip`
 
-  const zipPath = path.join(`${__dirname}/dist`, zipPublic)
-  const outputPublic = createWriteStream(zipPath)
+  const zipPublic = `plugin_${timestamp}.zip`
   const archiveOut = archiver("zip", { zlib: { level: 9 } })
-  archiveOut.pipe(outputPublic)
+  archiveOut.pipe(createWriteStream(path.join(__dirname, "dist", zipPublic)))
   archiveOut.directory(path.join(__dirname, "out/"), false)
   await archiveOut.finalize()
 
-  // Firefox wants source if minified, so include source files too
-  const zipSourcePath = path.join(`${__dirname}/dist`, zipSource)
-  const outputSource = createWriteStream(zipSourcePath)
+  // Firefox requires source files when submitting minified code
+  const zipSource = `source_${timestamp}.zip`
   const archiveSource = archiver("zip", { zlib: { level: 9 } })
-  archiveSource.pipe(outputSource)
+  archiveSource.pipe(createWriteStream(path.join(__dirname, "dist", zipSource)))
   archiveSource.directory(path.join(__dirname, "src/"), false)
-
-  const extraFiles = ["build.js", "package.json"]
-  extraFiles.forEach(file => {
+  for (const file of ["build.js", "package.json"])
     archiveSource.file(path.join(__dirname, file), { name: file })
-  })
-
   await archiveSource.finalize()
 
-  console.log(`🗜️ Created ${zipPublic} and ${zipSource}`)
+  log("ZIP", `${zipPublic} + ${zipSource}`)
 }
 
-// Run with node build.js [zip] [js]
-// Accept multiple arguments in any order
-const args = process.argv.slice(2)
-const doZip = args.includes("zip")
-const doJS = args.includes("js")
-const doSASS = args.includes("css")
-const assets = args.includes("assets")
-const clean = args.includes("clean")
-
-if (clean) {
-  await cleanUp()
-}
-
-const buildFolders = ["dist", "out"]
-
-buildFolders.forEach(folder => {
-  if (!fs.existsSync(path.join(__dirname, folder))) {
-    fs.mkdirSync(path.join(__dirname, folder), { recursive: true })
+const jsWatchPlugin = {
+  name: "watch-log",
+  setup(build) {
+    build.onStart(() => log("JS", "Building JS..."))
+    build.onEnd(result => log("JS", result.errors.length ? "Error" : "Done building"))
   }
-})
-
-if (!args.length) {
-  await copyAssets()
-  await buildJS()
-  await buildSASS()
-  await createZip()
-} else {
-  if (doJS) await buildJS()
-  if (doSASS) await buildSASS()
-  if (doZip) await createZip()
-  if (assets) await copyAssets()
 }
 
+async function watch() {
+  log("WATCH", "Starting to watch for changes...")
+
+  await copyAssets()
+  await buildCSS()
+
+  const contexts = await Promise.all(
+    jsBuildConfigs.map(cfg => esbuild.context(esbuildOptions(cfg, {
+      minify: false,
+      sourcemap: true,
+      plugins: [jsWatchPlugin]
+    })))
+  )
+  await Promise.all(contexts.map(ctx => ctx.watch()))
+
+  fs.watch(path.join(__dirname, "src/scss"), { recursive: true }, () => {
+    buildCSS().catch(err => log("CSS", err.message))
+  })
+
+  fs.watch(path.join(__dirname, "src"), { recursive: false }, (_, filename) => {
+    if (filename && (filename.endsWith(".html") || filename.endsWith(".json")))
+      copyAssets().catch(err => log("ASSET", err.message))
+  })
+
+  fs.watch(path.join(__dirname, "src/images"), { recursive: true }, () => {
+    copyAssets().catch(err => log("ASSET", err.message))
+  })
+}
+
+const command = process.argv[2]
+
+if (command === "clean") {
+  await clean()
+  process.exit(0)
+}
+
+ensureFolders("out", "dist")
+
+switch (command) {
+case "zip":   await zip();   break
+case "watch": await watch(); break
+default:      await build(); break
+}

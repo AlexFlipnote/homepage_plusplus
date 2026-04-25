@@ -44,12 +44,41 @@
 
     <!-- Weather placeholder -->
     <section id="weather-container" style="display: none;">
-      <img id="wicon" draggable="false" src="images/weather/clearsky_day.png">
-      <div class="details">
-        <p id="wname">Placeholder</p>
-        <p id="wdescription">Sunholder</p>
-        <div class="temp-container">
-          <p id="wtemp">21 °C</p>
+      <div class="current">
+        <img id="wicon" draggable="false" src="images/weather/clearsky_day.png">
+        <div class="details">
+          <p id="wname">Placeholder</p>
+          <p id="wdescription">Sunholder</p>
+          <div class="temp-container">
+            <p id="wtemp">21 °C</p>
+          </div>
+        </div>
+      </div>
+      <div id="wforecast">
+        <div class="forecast-item">
+          <span class="forecast-hour">12:00</span>
+          <img src="images/weather/clearsky_day.png" draggable="false" alt="Clear sky">
+          <span class="forecast-temp">21 °C</span>
+        </div>
+        <div class="forecast-item">
+          <span class="forecast-hour">13:00</span>
+          <img src="images/weather/partlycloudy_day.png" draggable="false" alt="Partly cloudy">
+          <span class="forecast-temp">22 °C</span>
+        </div>
+        <div class="forecast-item">
+          <span class="forecast-hour">14:00</span>
+          <img src="images/weather/partlycloudy_day.png" draggable="false" alt="Partly cloudy">
+          <span class="forecast-temp">23 °C</span>
+        </div>
+        <div class="forecast-item">
+          <span class="forecast-hour">15:00</span>
+          <img src="images/weather/cloudy.png" draggable="false" alt="Cloudy">
+          <span class="forecast-temp">22 °C</span>
+        </div>
+        <div class="forecast-item">
+          <span class="forecast-hour">16:00</span>
+          <img src="images/weather/lightrain.png" draggable="false" alt="Light rain">
+          <span class="forecast-temp">20 °C</span>
         </div>
       </div>
     </section>

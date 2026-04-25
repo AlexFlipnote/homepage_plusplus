@@ -3,12 +3,15 @@ import { translate } from "./i18n.js"
 import { reverseGeocode } from "./openstreetmap.js"
 import { Cache } from "./cache.js"
 
+// eslint-disable-next-line camelcase
+import tz_lookup from "tz-lookup"
+
 function toFahrenheit(celsius) {
   return Math.round(celsius * (9 / 5) + 32)
 }
 
 class ForecastData {
-  constructor(data, lang = "en") {
+  constructor(data, lang = "en", time = null, timezone = null) {
     this.temprature = data.instant.details.air_temperature
     this.wind_speed = data.instant.details.wind_speed
     this.humidity = data.instant.details.relative_humidity
@@ -18,6 +21,14 @@ class ForecastData {
     this.precipitation = data.next_1_hours.details.precipitation_amount
 
     this.lang = lang
+    this.time = time ? new Date(time) : null
+    this.timezone = timezone
+  }
+
+  getHour() {
+    if (!this.time) return ""
+    const opts = { hour: "2-digit", hour12: false, ...(this.timezone && { timeZone: this.timezone }) }
+    return this.time.toLocaleString("en-GB", opts) + ":00"
   }
 
   prettyName() {
@@ -40,10 +51,11 @@ class MetNoWeather {
   constructor(lang = "en") {
     this.lang = lang
     this.entries = []
+    this.timezone = null
   }
 
   updateEntries(weatherDataRaw) {
-    this.entries = weatherDataRaw.map(entry => new ForecastData(entry.data, this.lang))
+    this.entries = weatherDataRaw.map(entry => new ForecastData(entry.data, this.lang, entry.time, this.timezone))
   }
 
   getCurrent() {
@@ -60,6 +72,8 @@ class MetNoWeather {
     const posPrefix = `${pos.latitude.toFixed(2)},${pos.longitude.toFixed(2)}`
     const cacheKey = `weatherData_${posPrefix}`
 
+    this.timezone = tz_lookup(pos.latitude, pos.longitude)
+
     // Check if weather data is cached (5 minutes)
     const cachedWeather = await cache.get(cacheKey)
     if (cachedWeather) {
@@ -74,7 +88,10 @@ class MetNoWeather {
     )
 
     const weatherDataRaw = weatherResponse.properties.timeseries
-    const slicedData = weatherDataRaw.slice(0, 6) // Limit to current + next 5 hours
+    const now = new Date()
+    const futureIdx = weatherDataRaw.findIndex(entry => new Date(entry.time) > now)
+    const startIndex = futureIdx <= 0 ? 0 : futureIdx - 1
+    const slicedData = weatherDataRaw.slice(startIndex, startIndex + 6)
     this.updateEntries(slicedData)
     // Cache weather data for 5 minutes (300 seconds)
     cache.set(cacheKey, slicedData, 300)
@@ -108,11 +125,25 @@ export async function getWeather(items, position, lang) {
   document.getElementById("wicon").src = `images/weather/${weatherData.symbol_code}.png`
   document.getElementById("wdescription").innerText = weatherData.prettyName()
 
-  if (items.temp_type === "fahrenheit") {
+  const isFahrenheit = items.temp_type === "fahrenheit"
+  if (isFahrenheit) {
     wtemp.innerText = `${toFahrenheit(weatherData.temprature)} °F`
   } else {
     wtemp.innerText = `${Math.round(weatherData.temprature)} °C`
   }
+
+  const forecastEl = document.getElementById("wforecast")
+  forecastEl.innerHTML = weather.getNextHours().map(entry => {
+    const temp = isFahrenheit
+      ? `${toFahrenheit(entry.temprature)} °F`
+      : `${Math.round(entry.temprature)} °C`
+    return `<div class="forecast-item">
+      <span class="forecast-hour">${entry.getHour()}</span>
+      <img src="images/weather/${entry.symbol_code}.png" draggable="false" alt="${entry.prettyName()}">
+      <span class="forecast-temp">${temp}</span>
+    </div>`
+  }).join("")
+
   showWeatherContainer()
 
   // OpenStreetMap API can be rate limited, so we cache the location name for 1 hour
