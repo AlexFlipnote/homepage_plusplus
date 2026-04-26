@@ -58,14 +58,14 @@ export class Cache {
    * Set a value inside the cache object
    * @param {string} key - The sub-key (e.g., 'profile')
    * @param {any} value - The data
-   * @param {number} ttlMinutes - Time to live in minutes (optional)
+   * @param {number} ttlSeconds - Time to live in seconds (optional)
    * @returns {any} The stored value
    */
-  async set(key, value, ttlMinutes = 60) {
+  async set(key, value, ttlSeconds = 600) {
     const store = await this._getStore()
 
     const now = Date.now()
-    const expiry = now + (ttlMinutes * 60 * 1000)
+    const expiry = now + (ttlSeconds * 1000)
 
     store[key] = {
       value: value,
