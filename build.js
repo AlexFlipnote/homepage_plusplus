@@ -9,24 +9,45 @@ import { fileURLToPath } from "url"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+const i18nAutoPlugin = {
+  name: "i18n-auto",
+  setup(build) {
+    build.onResolve({ filter: /^__i18n_auto__$/ }, args => ({
+      path: args.path,
+      namespace: "i18n-auto"
+    }))
+    build.onLoad({ filter: /.*/, namespace: "i18n-auto" }, () => {
+      const i18nDir = path.join(__dirname, "i18n")
+      const files = fs.readdirSync(i18nDir).filter(f => f.endsWith(".json"))
+      const imports = files.map((f, i) => `import lang${i} from ${JSON.stringify(path.join(i18nDir, f).replace(/\\/g, "/"))}`).join("\n")
+      const entries = files.map((f, i) => `  ${JSON.stringify(f.replace(".json", ""))}: lang${i}`).join(",\n")
+      return { contents: `${imports}\nexport default {\n${entries}\n}`, loader: "js", resolveDir: __dirname }
+    })
+  }
+}
+
 const jsBuildConfigs = [
   { entryPoints: ["src/js/index.js"], outfile: "out/js/index.js" },
   { entryPoints: ["src/js/options.js"], outfile: "out/js/options.js" }
 ]
 
-const esbuildOptions = (cfg, overrides = {}) => ({
-  bundle: true,
-  format: "iife",
-  minify: true,
-  sourcemap: false,
-  target: ["es2017"],
-  alias: {
-    "@": path.join(__dirname, "src"),
-    "@i18n": path.join(__dirname, "i18n")
-  },
-  ...cfg,
-  ...overrides
-})
+const esbuildOptions = (cfg, overrides = {}) => {
+  const { plugins: extraPlugins = [], ...rest } = overrides
+  return {
+    bundle: true,
+    format: "iife",
+    minify: true,
+    sourcemap: false,
+    target: ["es2017"],
+    alias: {
+      "@": path.join(__dirname, "src"),
+      "@i18n": path.join(__dirname, "i18n")
+    },
+    plugins: [i18nAutoPlugin, ...extraPlugins],
+    ...cfg,
+    ...rest
+  }
+}
 
 function log(type, message) {
   const now = new Date()
@@ -101,7 +122,7 @@ async function zip() {
   await archiveOut.finalize()
 
   // Firefox requires source files when submitting minified code
-  const zipSource = `source_${timestamp}.zip`
+  const zipSource = `raw_source_${timestamp}.zip`
   const archiveSource = archiver("zip", { zlib: { level: 9 } })
   archiveSource.pipe(createWriteStream(path.join(__dirname, "dist", zipSource)))
   archiveSource.directory(path.join(__dirname, "src/"), false)

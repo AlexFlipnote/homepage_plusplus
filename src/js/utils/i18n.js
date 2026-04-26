@@ -1,35 +1,15 @@
-import enGb from "@i18n/en-GB.json"
-import noNb from "@i18n/no-NB.json"
-import esEs from "@i18n/es-ES.json"
-import frFr from "@i18n/fr-FR.json"
-import ptPt from "@i18n/pt-PT.json"
+import translations from "__i18n_auto__"
 
+export { translations }
 export const DEFAULT_LANG = "en-GB"
 export let SELECTED_LANG = DEFAULT_LANG
 
-/** Set the current language
- * @param {string} lang - Language code (e.g., 'en-GB')
- */
 export function setLocale(lang) {
   SELECTED_LANG = lang || DEFAULT_LANG
 }
 
-/** Get the currently selected language
- * @returns {string} Language code (e.g., 'en-GB')
- */
 export function getLocale() {
   return SELECTED_LANG
-}
-
-/**
- * Translations object containing all language data
- */
-export const translations = {
-  "en-GB": enGb,
-  "no-NB": noNb,
-  "es-ES": esEs,
-  "fr-FR": frFr,
-  "pt-PT": ptPt
 }
 
 /**
