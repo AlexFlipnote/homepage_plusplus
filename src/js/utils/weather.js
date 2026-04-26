@@ -93,7 +93,7 @@ class MetNoWeather {
     const startIndex = futureIdx > 0 ? futureIdx - 1 : 0
     const slicedData = weatherDataRaw.slice(startIndex, startIndex + 6)
     this.updateEntries(slicedData)
-    cache.set(cacheKey, slicedData, 300)
+    cache.set(cacheKey, slicedData)
   }
 }
 
