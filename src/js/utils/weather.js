@@ -163,7 +163,11 @@ export async function getWeather(items, position, lang) {
       "Unknown Location"
   )
   showWeatherContainer()
-  cache.set(locationCacheKey, wname.innerText)
+
+  cache.set(
+    locationCacheKey, wname.innerText,
+    43200  // 12 hours, street data does not really change..
+  )
 
 }
 
