@@ -26,6 +26,8 @@ export const extensionSettings = {
   wlon: 0,
   wManualLocation: false,
   temp_type: "celcius",
+  wShowHourly: false,
+  wDailyDays: 0,
   hexbg: false,
   showSettings: true,
   customcss: ""
@@ -87,6 +89,8 @@ function saveOptions(message, css="") {
     wManualLocation: document.getElementById("wManualLocation").checked,
     hexbg: document.getElementById("hexbg").checked,
     temp_type: document.getElementById("temp_type").value,
+    wShowHourly: document.getElementById("wShowHourly").checked,
+    wDailyDays: parseInt(document.getElementById("wDailyDays").value),
     showSettings: document.getElementById("show-settings").checked,
     bookmarksFavicon: document.getElementById("bookmarksFavicon").checked,
     bookmarksTopSitesEnabled: document.getElementById("bookmarksTopSitesEnabled").checked,
@@ -191,6 +195,14 @@ function restoreOptions() {
     const tempType = document.getElementById("temp_type")
     tempType.value = items.temp_type
     tempType.onchange = () => { saveOptions(`Weather temperature type changed: ${tempType.value}`, "change") }
+
+    const wShowHourly = document.getElementById("wShowHourly")
+    wShowHourly.checked = items.wShowHourly
+    wShowHourly.onchange = () => { saveOptions(`Show hourly forecast set: ${wShowHourly.checked}`, wShowHourly.checked ? "add" : "remove") }
+
+    const wDailyDays = document.getElementById("wDailyDays")
+    wDailyDays.value = items.wDailyDays
+    wDailyDays.onchange = () => { saveOptions(`Daily forecast days set: ${wDailyDays.value}`, "change") }
 
     const showSettings = document.getElementById("show-settings")
     showSettings.checked = items.showSettings

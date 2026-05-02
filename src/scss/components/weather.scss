@@ -62,6 +62,43 @@
     }
   }
 
+  #wdailyforecast {
+    border-top: .05rem solid rgba(255, 255, 255, 0.1);
+    flex-direction: column;
+    gap: 0.2rem;
+    padding-top: 0.4rem;
+
+    .daily-item {
+      align-items: center;
+      display: flex;
+      flex-direction: row;
+      gap: 0.5rem;
+
+      .daily-name {
+        color: var(--font-primary);
+        flex: 1;
+        font-size: 0.9rem;
+      }
+
+      .daily-high {
+        color: var(--font-primary);
+        font-size: 0.85rem;
+        min-width: 2rem;
+        text-align: right;
+      }
+
+      .daily-low {
+        color: var(--font-secondary);
+        font-size: 0.85rem;
+      }
+
+      img {
+        height: 1.5rem;
+        width: 1.5rem;
+      }
+    }
+  }
+
   p {
     font-size: 1.25rem;
     font-weight: 400;

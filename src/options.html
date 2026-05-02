@@ -226,7 +226,11 @@
           <input type="checkbox" id="wEnable"> Enable weather (Source: <a href="https://api.met.no/" target="_blank">MET Norway</a>)
         </label>
         <label>
-          <input type="checkbox" id="wManualLocation"> Pick a location manually instead
+          <input type="checkbox" id="wShowHourly"> Show hourly forecast
+        </label>
+        <label class="column secondary-bg">
+          Days of daily forecast (0 = disabled):
+          <input type="number" style="width: 13rem" id="wDailyDays" min="0" max="3" step="1">
         </label>
         <label class="column secondary-bg">
           Temperature type:
@@ -234,6 +238,9 @@
             <option value="celcius">Celsius (°C)</option>
             <option value="fahrenheit">Fahrenheit (°F)</option>
           </select>
+        </label>
+        <label>
+          <input type="checkbox" id="wManualLocation"> Pick a location manually instead
         </label>
         <div id="map">
           <div class="map-coords">

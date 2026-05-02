@@ -51,6 +51,7 @@ class MetNoWeather {
   constructor(lang = "en") {
     this.lang = lang
     this.entries = []
+    this.dailyForecasts = []
     this.timezone = null
   }
 
@@ -66,19 +67,78 @@ class MetNoWeather {
     return this.entries.slice(1, this.entries.length)
   }
 
+  _pickDayIcon(entries) {
+    // Prefer noon-ish entry with next_12_hours (best daily summary)
+    for (const entry of entries) {
+      const h = parseInt(new Date(entry.time).toLocaleString("en-GB", { hour: "numeric", hour12: false, timeZone: this.timezone }))
+      if (h >= 11 && h <= 13 && entry.data.next_12_hours?.summary?.symbol_code) {
+        return entry.data.next_12_hours.summary.symbol_code
+      }
+    }
+    // Any entry with next_12_hours
+    for (const entry of entries) {
+      if (entry.data.next_12_hours?.summary?.symbol_code) return entry.data.next_12_hours.summary.symbol_code
+    }
+    // Noon with next_1_hours
+    for (const entry of entries) {
+      const h = parseInt(new Date(entry.time).toLocaleString("en-GB", { hour: "numeric", hour12: false, timeZone: this.timezone }))
+      if (h >= 11 && h <= 13 && entry.data.next_1_hours?.summary?.symbol_code) {
+        return entry.data.next_1_hours.summary.symbol_code
+      }
+    }
+    // Any available
+    for (const entry of entries) {
+      if (entry.data.next_1_hours?.summary?.symbol_code) return entry.data.next_1_hours.summary.symbol_code
+    }
+    return "clearsky_day"
+  }
+
+  buildDailyForecasts(timeseries, maxDays = 3) {
+    const now = new Date()
+    const todayStr = now.toLocaleDateString("en-GB", { timeZone: this.timezone })
+    const byDay = new Map()
+
+    for (const entry of timeseries) {
+      const entryDate = new Date(entry.time)
+      if (entryDate <= now) continue
+
+      const dayStr = entryDate.toLocaleDateString("en-GB", { timeZone: this.timezone })
+      if (dayStr === todayStr) continue
+
+      if (!byDay.has(dayStr)) byDay.set(dayStr, { date: entryDate, entries: [] })
+      byDay.get(dayStr).entries.push({ time: entry.time, data: entry.data })
+    }
+
+    return [...byDay.values()].slice(0, maxDays).map(({ date, entries }) => {
+      const temps = entries.map(e => e.data.instant.details.air_temperature)
+      return {
+        dayName: translate(
+          this.lang,
+          `date.days.long.${date.toLocaleDateString("en-GB", { weekday: "long", timeZone: this.timezone }).toLowerCase()}`
+        ),
+        highTemp: Math.max(...temps),
+        lowTemp: Math.min(...temps),
+        symbol_code: this._pickDayIcon(entries)
+      }
+    })
+  }
+
   async fetch(position) {
     const cache = new Cache()
     const pos = position.coords
     const posPrefix = `${pos.latitude.toFixed(2)},${pos.longitude.toFixed(2)}`
-    const cacheKey = `weatherData_${posPrefix}`
+    const hourlyKey = `weatherData_${posPrefix}`
+    const dailyKey = `weatherDaily_${posPrefix}`
 
     this.timezone = tz_lookup(pos.latitude, pos.longitude)
 
-    // Check if weather data is cached (5 minutes)
-    const cachedWeather = await cache.get(cacheKey)
-    if (cachedWeather) {
+    const cachedHourly = await cache.get(hourlyKey)
+    const cachedDaily = await cache.get(dailyKey)
+
+    if (cachedHourly && cachedDaily) {
       console.log("📦 Cache: Fetched weather data from cache")
-      this.updateEntries(cachedWeather)
+      this.updateEntries(cachedHourly)
+      this.dailyForecasts = cachedDaily
       return
     }
 
@@ -93,7 +153,10 @@ class MetNoWeather {
     const startIndex = futureIdx > 0 ? futureIdx - 1 : 0
     const slicedData = weatherDataRaw.slice(startIndex, startIndex + 6)
     this.updateEntries(slicedData)
-    cache.set(cacheKey, slicedData)
+    cache.set(hourlyKey, slicedData)
+
+    this.dailyForecasts = this.buildDailyForecasts(weatherDataRaw)
+    cache.set(dailyKey, this.dailyForecasts)
   }
 }
 
@@ -132,16 +195,39 @@ export async function getWeather(items, position, lang) {
   }
 
   const forecastEl = document.getElementById("wforecast")
-  forecastEl.innerHTML = weather.getNextHours().map(entry => {
-    const temp = isFahrenheit
-      ? `${toFahrenheit(entry.temprature)} °F`
-      : `${Math.round(entry.temprature)} °C`
-    return `<div class="forecast-item">
-      <span class="forecast-hour">${entry.getHour()}</span>
-      <img src="images/weather/${entry.symbol_code}.png" draggable="false" alt="${entry.prettyName()}">
-      <span class="forecast-temp">${temp}</span>
-    </div>`
-  }).join("")
+  if (items.wShowHourly !== false) {
+    forecastEl.innerHTML = weather.getNextHours().map(entry => {
+      const temp = isFahrenheit
+        ? `${toFahrenheit(entry.temprature)} °F`
+        : `${Math.round(entry.temprature)} °C`
+      return `<div class="forecast-item">
+        <span class="forecast-hour">${entry.getHour()}</span>
+        <img src="images/weather/${entry.symbol_code}.png" draggable="false" alt="${entry.prettyName()}">
+        <span class="forecast-temp">${temp}</span>
+      </div>`
+    }).join("")
+    forecastEl.style.display = "flex"
+  } else {
+    forecastEl.style.display = "none"
+  }
+
+  const maxDays = parseInt(items.wDailyDays) || 0
+  const dailyEl = document.getElementById("wdailyforecast")
+  if (maxDays > 0 && weather.dailyForecasts.length > 0) {
+    dailyEl.innerHTML = weather.dailyForecasts.slice(0, maxDays).map(day => {
+      const high = isFahrenheit ? toFahrenheit(day.highTemp) : Math.round(day.highTemp)
+      const low = isFahrenheit ? toFahrenheit(day.lowTemp) : Math.round(day.lowTemp)
+      return `<div class="daily-item">
+        <span class="daily-name">${day.dayName}</span>
+        <span class="daily-high">${high}°</span>
+        <span class="daily-low">${low}°</span>
+        <img src="images/weather/${day.symbol_code}.png" draggable="false" alt="${day.dayName}">
+      </div>`
+    }).join("")
+    dailyEl.style.display = "flex"
+  } else {
+    dailyEl.style.display = "none"
+  }
 
   showWeatherContainer()
 
