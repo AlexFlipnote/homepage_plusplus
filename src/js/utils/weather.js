@@ -123,7 +123,7 @@ class MetNoWeather {
     })
   }
 
-  async fetch(position) {
+  async fetch(position, skipCache = false) {
     const cache = new Cache()
     const pos = position.coords
     const posPrefix = `${pos.latitude.toFixed(2)},${pos.longitude.toFixed(2)}`
@@ -132,14 +132,16 @@ class MetNoWeather {
 
     this.timezone = tz_lookup(pos.latitude, pos.longitude)
 
-    const cachedHourly = await cache.get(hourlyKey)
-    const cachedDaily = await cache.get(dailyKey)
+    if (!skipCache) {
+      const cachedHourly = await cache.get(hourlyKey)
+      const cachedDaily = await cache.get(dailyKey)
 
-    if (cachedHourly && cachedDaily) {
-      console.log("📦 Cache: Fetched weather data from cache")
-      this.updateEntries(cachedHourly)
-      this.dailyForecasts = cachedDaily
-      return
+      if (cachedHourly && cachedDaily) {
+        console.log("📦 Cache: Fetched weather data from cache")
+        this.updateEntries(cachedHourly)
+        this.dailyForecasts = cachedDaily
+        return
+      }
     }
 
     const weatherResponse = await http(
@@ -153,14 +155,14 @@ class MetNoWeather {
     const startIndex = futureIdx > 0 ? futureIdx - 1 : 0
     const slicedData = weatherDataRaw.slice(startIndex, startIndex + 6)
     this.updateEntries(slicedData)
-    cache.set(hourlyKey, slicedData)
+    await cache.set(hourlyKey, slicedData)
 
     this.dailyForecasts = this.buildDailyForecasts(weatherDataRaw)
-    cache.set(dailyKey, this.dailyForecasts)
+    await cache.set(dailyKey, this.dailyForecasts)
   }
 }
 
-export async function getWeather(items, position, lang) {
+export async function getWeather(items, position, lang, skipCache = false) {
   const cache = new Cache()
 
   const pos = position.coords
@@ -181,7 +183,7 @@ export async function getWeather(items, position, lang) {
 
   // Use MetNoWeather class to fetch weather data
   const weather = new MetNoWeather(lang || "en")
-  await weather.fetch(position)
+  await weather.fetch(position, skipCache)
   const weatherData = weather.getCurrent()
 
   document.getElementById("wicon").src = `images/weather/${weatherData.symbol_code}.png`

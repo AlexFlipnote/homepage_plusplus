@@ -105,12 +105,34 @@ if (isExtension) {
     }
 
     if (items.wEnable) {
+      const scheduleWeatherRefresh = (position) => {
+        const now = new Date()
+        const next = new Date(now)
+        next.setSeconds(0)
+        next.setMilliseconds(0)
+        next.setMinutes(5)
+        if (now.getMinutes() >= 5) next.setHours(now.getHours() + 1)
+        const delay = next - now
+
+        const refreshWeather = () => {
+          console.log("⌛ Refreshing weather automatically")
+          getWeather(items, position, items.language, true)
+        }
+
+        setTimeout(() => {
+          refreshWeather()
+          setInterval(refreshWeather, 60 * 60 * 1000)
+        }, delay)
+      }
+
       if (items.wManualLocation) {
         const position = new ManualPosition(items.wlat, items.wlon)
         getWeather(items, position, items.language)
+        scheduleWeatherRefresh(position)
       } else {
         navigator.geolocation.getCurrentPosition((position) => {
           getWeather(items, position, items.language)
+          scheduleWeatherRefresh(position)
         })
       }
     }
