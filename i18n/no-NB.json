@@ -86,5 +86,6 @@
   "weather.lightsnowandthunder": "Lett snø og torden",
   "weather.snowandthunder": "Snø og torden",
   "weather.heavysnowandthunder": "Kraftig snø og torden",
-  "weather.fog": "Tåke"
+  "weather.fog": "Tåke",
+  "notepad.placeholder": "Skriv notater..."
 }

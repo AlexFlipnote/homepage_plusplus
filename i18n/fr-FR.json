@@ -86,5 +86,6 @@
   "weather.snow": "Neige",
   "weather.snowandthunder": "Neige et tonnerre",
   "weather.snowshowers": "Averses de neige",
-  "weather.snowshowersandthunder": "Averses de neige et tonnerre"
+  "weather.snowshowersandthunder": "Averses de neige et tonnerre",
+  "notepad.placeholder": "Écrire des notes..."
 }

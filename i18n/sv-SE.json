@@ -86,5 +86,6 @@
   "weather.lightsnowandthunder": "Lätt snö och åska",
   "weather.snowandthunder": "Snö och åska",
   "weather.heavysnowandthunder": "Kraftigt snöfall och åska",
-  "weather.fog": "Dimma"
+  "weather.fog": "Dimma",
+  "notepad.placeholder": "Skriv anteckningar..."
 }

@@ -237,18 +237,35 @@ if (isExtension) {
       if (items.notepadContent) {
         notepadText.value = items.notepadContent
       }
+      notepadText.placeholder = translate(items.language, "notepad.placeholder")
 
       if (items.notepadOpen) {
         notepadEl.classList.add("open")
         requestAnimationFrame(updateScrollbarState)
       }
 
-      notepadEl.addEventListener("click", (e) => {
+      const clampNotepadSize = () => {
+        const clampedWidth = Math.min(notepadWidth, maxNotepadWidth())
+        const clampedHeight = Math.min(notepadHeight, maxNotepadHeight())
+        if (clampedWidth !== notepadWidth || clampedHeight !== notepadHeight) {
+          notepadWidth = clampedWidth
+          notepadHeight = clampedHeight
+          applyNotepadSize()
+          chrome.storage.local.set({ notepadWidth, notepadHeight })
+        }
+      }
+
+      notepadEl.addEventListener("click", () => {
         if (!notepadEl.classList.contains("open")) {
+          notepadText.style.overflowY = "hidden"
           notepadEl.classList.add("open")
           chrome.storage.local.set({ notepadOpen: true })
-          requestAnimationFrame(updateScrollbarState)
-          setTimeout(() => notepadText.focus(), 200)
+          clampNotepadSize()
+          notepadEl.addEventListener("transitionend", () => {
+            notepadText.style.overflowY = ""
+            updateScrollbarState()
+            notepadText.focus()
+          }, { once: true })
         }
       })
 
@@ -306,16 +323,9 @@ if (isExtension) {
         chrome.storage.local.set({ notepadWidth, notepadHeight })
       })
 
-      window.addEventListener("resize", () => {
-        const clampedWidth = Math.min(notepadWidth, maxNotepadWidth())
-        const clampedHeight = Math.min(notepadHeight, maxNotepadHeight())
-        if (clampedWidth !== notepadWidth || clampedHeight !== notepadHeight) {
-          notepadWidth = clampedWidth
-          notepadHeight = clampedHeight
-          applyNotepadSize()
-          chrome.storage.local.set({ notepadWidth, notepadHeight })
-        }
-      })
+      window.addEventListener("resize", clampNotepadSize)
+
+      if (items.notepadOpen) clampNotepadSize()
     }
   })
 
@@ -422,7 +432,7 @@ if (isExtension) {
       notepadEl.classList.toggle("scrollbar-visible", notepadText.scrollHeight > notepadText.clientHeight)
     }
 
-    notepadEl.onclick = (e) => {
+    notepadEl.onclick = () => {
       if (!notepadEl.classList.contains("open")) {
         notepadEl.classList.add("open")
         requestAnimationFrame(updateScrollbarState)

@@ -3,337 +3,407 @@
   <head>
     <title>Homepage++ - Settings</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <link href="css/index.css" type="text/css" rel="stylesheet">
   </head>
-  <body>
+  <body class="settings-page">
 
-    <div class="text-center container">
-      <div class="header-container">
-        <img src="images/logo.png" alt="Homepage Logo">
-        <h1>Homepage++ settings <span id="version-label"></span></h1>
-      </div>
+    <div class="settings-layout">
 
-      <div class="box-container">
-        <h1 class="no-margin">General settings</h1>
-        <label class="column secondary-bg">
-          Language:
-          <select id="language">
-            <option value="">Default: English (United Kingdom)</option>
-          </select>
-        </label>
-        <div class="flex-grid">
-          <div class="col-xs-6">
-            <label><input type="checkbox" id="show_time"> Show time</label>
-            <label><input type="checkbox" id="show_date"> Show date</label>
-            <label><input type="checkbox" id="searchbar"> Show search bar</label>
-          </div>
-          <div class="col-xs-6">
-            <label><input type="checkbox" id="show-settings"> Show settings button</label>
-            <label><input type="checkbox" id="notepadEnabled"> Show notepad</label>
-            <label><input type="checkbox" id="notepadInWindow"> Show notes in popup</label>
-            <label><input type="checkbox" id="animations"> Enable animations</label>
-          </div>
+      <nav class="settings-sidebar">
+        <div class="sidebar-header">
+          <img src="images/logo.png" alt="Homepage Logo">
+          <span>Homepage++ <span id="version-label"></span></span>
         </div>
-        <br>
-        <div class="flex-grid">
-          <div class="col-xs-6">
-            <label>
-              <button id="export-settings">Export settings</button>
-            </label>
-          </div>
-          <div class="col-xs-6">
-            <label>
-              <button id="import-settings-btn">Import settings</button>
-              <input type="file" id="import-settings-input" accept=".json" style="display: none">
-            </label>
-          </div>
-        </div>
-      </div>
 
-      <div class="box-container">
-        <h1 class="no-margin">Customise timestamp</h1>
-        <p>
-          You can customize the time and date format using Python strftime format.<br>
-          Leave empty to use the default format.
-        </p>
-        <div class="flex-grid">
-          <div class="col-xs-6">
-            <label class="column secondary-bg">
-              Time format:
-              <input id="fmt_time" class="secondary" placeholder="%H:%M:%S">
-            </label>
-          </div>
-          <div class="col-xs-6">
-            <label class="column secondary-bg">
-              Date format:
-              <input id="fmt_date" class="secondary" placeholder="%e. %B %Y">
-            </label>
-          </div>
-        </div>
-        <br>
-        <details style="font-size: 1rem">
-          <summary>Format reference</summary>
-          <table>
-            <thead>
-              <tr>
-                <th>Format</th>
-                <th>Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Year -->
-              <tr>
-                <td>%Y</td>
-                <td>Year with century as a decimal number (e.g., 2025).</td>
-              </tr>
-              <tr>
-                <td>%y</td>
-                <td>Year without century as a zero-padded decimal number (00–99).</td>
-              </tr>
+        <span class="sidebar-category">General</span>
+        <button class="sidebar-item active" data-section="general">General</button>
+        <button class="sidebar-item" data-section="timestamp">Timestamp</button>
 
-              <!-- Month -->
-              <tr>
-                <td>%m</td>
-                <td>Month as a zero-padded decimal number (01–12).</td>
-              </tr>
-              <tr>
-                <td>%B</td>
-                <td>Full month name (e.g., January, February).</td>
-              </tr>
-              <tr>
-                <td>%b</td>
-                <td>Abbreviated month name (e.g., Jan, Feb).</td>
-              </tr>
+        <span class="sidebar-category">Appearance</span>
+        <button class="sidebar-item" data-section="background">Background</button>
+        <button class="sidebar-item" data-section="font">Custom Font</button>
+        <button class="sidebar-item" data-section="hexbg">HEX Background</button>
 
-              <!-- Day -->
-              <tr>
-                <td>%d</td>
-                <td>Day of the month as a zero-padded decimal number (01–31).</td>
-              </tr>
-              <tr>
-                <td>%e</td>
-                <td>Day of the month as a space-padded decimal number ( 1–31).</td>
-              </tr>
-              <tr>
-                <td>%j</td>
-                <td>Day of the year as a zero-padded decimal number (001–366).</td>
-              </tr>
+        <span class="sidebar-category">Features</span>
+        <button class="sidebar-item" data-section="weather">Weather</button>
+        <button class="sidebar-item" data-section="bookmarks">Bookmarks</button>
+        <button class="sidebar-item" data-section="notepad">Notepad</button>
 
-              <!-- Weekday -->
-              <tr>
-                <td>%A</td>
-                <td>Full weekday name (e.g., Monday, Tuesday).</td>
-              </tr>
-              <tr>
-                <td>%a</td>
-                <td>Abbreviated weekday name (e.g., Mon, Tue).</td>
-              </tr>
-              <tr>
-                <td>%w</td>
-                <td>Weekday as a decimal number, where Sunday is 0.</td>
-              </tr>
+        <span class="sidebar-category">Advanced</span>
+        <button class="sidebar-item" data-section="customcss">Custom CSS</button>
+        <button class="sidebar-item" data-section="backup">Backup</button>
 
-              <!-- Time -->
-              <tr>
-                <td>%H</td>
-                <td>Hour (24-hour clock) as a zero-padded decimal number (00–23).</td>
-              </tr>
-              <tr>
-                <td>%I</td>
-                <td>Hour (12-hour clock) as a zero-padded decimal number (01–12).</td>
-              </tr>
-              <tr>
-                <td>%p</td>
-                <td>Locale’s equivalent of AM or PM.</td>
-              </tr>
-              <tr>
-                <td>%M</td>
-                <td>Minute as a zero-padded decimal number (00–59).</td>
-              </tr>
-              <tr>
-                <td>%S</td>
-                <td>Second as a zero-padded decimal number (00–59).</td>
-              </tr>
-              <tr>
-                <td>%f</td>
-                <td>Millisecond as a zero-padded decimal number (000–999).</td>
-              </tr>
-
-              <!-- Timezone -->
-              <tr>
-                <td>%z</td>
-                <td>UTC offset in the form ±HHMM (e.g., +0100).</td>
-              </tr>
-              <tr>
-                <td>%Z</td>
-                <td>Time zone name (e.g., CET, UTC, PST). Falls back to offset if not available.</td>
-              </tr>
-
-              <!-- Combined shortcuts -->
-              <tr>
-                <td>%F</td>
-                <td>Shortcut for <code>%Y-%m-%d</code> (ISO 8601 date format).</td>
-              </tr>
-              <tr>
-                <td>%T</td>
-                <td>Shortcut for <code>%H:%M:%S</code> (24-hour time format).</td>
-              </tr>
-
-              <!-- Literal -->
-              <tr>
-                <td>%%</td>
-                <td>A literal percent sign (%).</td>
-              </tr>
-            </tbody>
-          </table>
-        </details>
-
-      </div>
-
-      <div class="box-container">
-        <h1 class="no-margin">Custom background</h1>
-        <p>
-          Upload images that you want as background! (Supported formats: JPG, PNG, GIF)<br>
-        </p>
-        <div id="custombg_previews">
-          <div class="file-container">
-            <img src="images/icons/upload_image.png" class="icon">
-            <span class="message">Drop files here or click...</span>
-            <input type="file" id="custombg_uploader" accept="image/png,image/jpeg,image/gif" multiple>
-          </div>
-        </div>
-        <label>
-          <button id="custombg_prune" class="error-bg">Delete all backgrounds</button>
-        </label>
-      </div>
-
-      <div class="box-container">
-        <h1 class="no-margin">Custom Font</h1>
-        <p>
-          You can have any fonts that you've installed to your local machine, just keep in mind that this is case sensitive.<br>
-          This does also support any fonts from <a href="https://fonts.google.com/" target="_blank">Google Fonts</a>,
-          however that <i>requires</i> both <b>Internet</b> and <b>From Google Fonts?</b> enabled in order for this to work on the homepage.
-        </p>
-        <label class="column secondary-bg">
-          Font name:
-          <input type="text" id="customfont" placeholder="Type custom font here...">
-        </label>
-        <label>
-          <input type="checkbox" id="customfontgoogle"> From Google Fonts?
-        </label>
-      </div>
-
-      <div class="box-container" id="hexbgdemobg">
-        <h1 class="no-margin">24h HEX Background</h1>
-        <p>
-          Just to showcase how it would look, this box background changes colour as a demonstration.<br>
-          <b>Keep in mind</b>, checking this will disable <b>Custom background</b><br><br>
-          <i>Current: <span id="hexbgdemotext"></span></i>
-        </p>
-        <label class="secondary-bg">
-          <input type="checkbox" id="hexbg"> Enable
-        </label>
-      </div>
-
-      <div class="box-container">
-        <h1 class="no-margin">Weather</h1>
-        <label>
-          <input type="checkbox" id="wEnable"> Enable weather (Source: <a href="https://api.met.no/" target="_blank">MET Norway</a>)
-        </label>
-        <label>
-          <input type="checkbox" id="wShowHourly"> Show hourly forecast
-        </label>
-        <label class="column secondary-bg">
-          Days of daily forecast (0 = disabled):
-          <input type="number" id="wDailyDays" min="0" max="3" step="1">
-        </label>
-        <label class="column secondary-bg">
-          Temperature type:
-          <select id="temp_type">
-            <option value="celcius">Celsius (°C)</option>
-            <option value="fahrenheit">Fahrenheit (°F)</option>
-          </select>
-        </label>
-        <label>
-          <input type="checkbox" id="wManualLocation"> Pick a location manually instead
-        </label>
-        <div id="map">
-          <div class="map-coords">
-            <span id="wlat"></span>, <span id="wlon"></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="box-container">
-        <h1 class="no-margin">Bookmarks</h1>
-        <p>
-          Add, remove and edit your bookmarks that are shown on the homepage.
-        </p>
-        <label id="bmFavFirefox">
-          <input type="checkbox" id="bookmarksFavicon"> Show favicons for bookmarks
-        </label>
-        <div id="blist" class="bookmark-container"></div>
-        <div class="bookmark-container">
-          <div class="bookmark-item">
-            <input id="bookmark_name" class="secondary" placeholder="Bookmark name">
-            <input id="bookmark_url" class="secondary" placeholder="https://example.com">
-            <img id="add_bookmark" src="images/icons/bookmark_add.png" alt="Add bookmark">
-          </div>
-        </div>
-        <br>
-        <h2 class="no-margin">Top Sites as bookmarks</h2>
-        <p>
-          Instead (or additionally) of manually adding bookmarks, you can have the extension fetch your most visited sites.<br>
-          This is based on your browser history and will update as you visit more sites.
-        </p>
-        <label>
-          <input type="checkbox" id="bookmarksTopSitesEnabled"> Enable Top Sites as bookmarks
-        </label>
-        <label class="column secondary-bg">
-          Number of top sites to show:
-          <input type="number" id="bookmarksTopSitesAmount" class="secondary" min="1" max="10" value="5">
-        </label>
-      </div>
-
-      <div class="box-container">
-        <h1 class="no-margin">Custom CSS</h1>
-        <p>
-          Go <span class="emerald-text">wild</span>, make the homepage <b class="sun-flower-text">more personal</b>.
-          I allow you to do <span class="emerald-text">whatever</span> you desire.
-        </p>
-        <textarea
-          id="customcss"
-          class="secondary-bg"
-          style="height: 15rem; width: 90%;"
-          placeholder="Write some hot CSS in here...">
-        </textarea>
-      </div>
-
-      <div class="box-container">
-        <h1 class="no-margin">Links</h1><br>
-        <div class="links-container">
-          <a href="https://discord.gg/yqb7vATbjH">
+        <div class="sidebar-footer">
+          <a href="https://discord.gg/yqb7vATbjH" title="Discord">
             <img src="./images/icons/discord.png" class="bookmark-icon">
           </a>
-          <a href="https://github.com/AlexFlipnote/homepage_plusplus">
+          <a href="https://github.com/AlexFlipnote/homepage_plusplus" title="GitHub">
             <img src="./images/icons/github.png" class="bookmark-icon">
           </a>
         </div>
-      </div>
+      </nav>
 
+      <main class="settings-content">
+
+        <!-- General -->
+        <section class="settings-section active" id="section-general">
+          <h2 class="section-title">General</h2>
+
+          <div class="setting-group">
+            <div class="setting-row setting-row--column">
+              <div class="setting-label">
+                <span>Language</span>
+                <span class="setting-desc">Override the display language of the extension</span>
+              </div>
+              <select id="language">
+                <option value="">Default: English (United Kingdom)</option>
+              </select>
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row">
+              <div class="setting-label">
+                <span>Show time</span>
+              </div>
+              <input type="checkbox" id="show_time">
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row">
+              <div class="setting-label">
+                <span>Show date</span>
+              </div>
+              <input type="checkbox" id="show_date">
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row">
+              <div class="setting-label">
+                <span>Show search bar</span>
+              </div>
+              <input type="checkbox" id="searchbar">
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row">
+              <div class="setting-label">
+                <span>Show settings button</span>
+              </div>
+              <input type="checkbox" id="show-settings">
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row">
+              <div class="setting-label">
+                <span>Enable animations</span>
+              </div>
+              <input type="checkbox" id="animations">
+            </div>
+          </div>
+        </section>
+
+        <!-- Timestamp -->
+        <section class="settings-section" id="section-timestamp">
+          <h2 class="section-title">Timestamp</h2>
+          <p class="section-desc">
+            Customise the time and date format using Python strftime format.<br>
+            Leave empty to use the default format.
+          </p>
+
+          <div class="setting-group">
+            <div class="setting-row setting-row--column">
+              <div class="setting-label">
+                <span>Time format</span>
+                <span class="setting-desc">Default: <code>%H:%M:%S</code></span>
+              </div>
+              <input id="fmt_time" placeholder="%H:%M:%S">
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row setting-row--column">
+              <div class="setting-label">
+                <span>Date format</span>
+                <span class="setting-desc">Default: <code>%e. %B %Y</code></span>
+              </div>
+              <input id="fmt_date" placeholder="%e. %B %Y">
+            </div>
+          </div>
+
+          <details>
+            <summary>Format reference</summary>
+            <table>
+              <thead>
+                <tr>
+                  <th>Format</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>%Y</td><td>Year with century as a decimal number (e.g., 2025).</td></tr>
+                <tr><td>%y</td><td>Year without century as a zero-padded decimal number (00–99).</td></tr>
+                <tr><td>%m</td><td>Month as a zero-padded decimal number (01–12).</td></tr>
+                <tr><td>%B</td><td>Full month name (e.g., January, February).</td></tr>
+                <tr><td>%b</td><td>Abbreviated month name (e.g., Jan, Feb).</td></tr>
+                <tr><td>%d</td><td>Day of the month as a zero-padded decimal number (01–31).</td></tr>
+                <tr><td>%e</td><td>Day of the month as a space-padded decimal number ( 1–31).</td></tr>
+                <tr><td>%j</td><td>Day of the year as a zero-padded decimal number (001–366).</td></tr>
+                <tr><td>%A</td><td>Full weekday name (e.g., Monday, Tuesday).</td></tr>
+                <tr><td>%a</td><td>Abbreviated weekday name (e.g., Mon, Tue).</td></tr>
+                <tr><td>%w</td><td>Weekday as a decimal number, where Sunday is 0.</td></tr>
+                <tr><td>%H</td><td>Hour (24-hour clock) as a zero-padded decimal number (00–23).</td></tr>
+                <tr><td>%I</td><td>Hour (12-hour clock) as a zero-padded decimal number (01–12).</td></tr>
+                <tr><td>%p</td><td>Locale's equivalent of AM or PM.</td></tr>
+                <tr><td>%M</td><td>Minute as a zero-padded decimal number (00–59).</td></tr>
+                <tr><td>%S</td><td>Second as a zero-padded decimal number (00–59).</td></tr>
+                <tr><td>%f</td><td>Millisecond as a zero-padded decimal number (000–999).</td></tr>
+                <tr><td>%z</td><td>UTC offset in the form ±HHMM (e.g., +0100).</td></tr>
+                <tr><td>%Z</td><td>Time zone name (e.g., CET, UTC, PST). Falls back to offset if not available.</td></tr>
+                <tr><td>%F</td><td>Shortcut for <code>%Y-%m-%d</code> (ISO 8601 date format).</td></tr>
+                <tr><td>%T</td><td>Shortcut for <code>%H:%M:%S</code> (24-hour time format).</td></tr>
+                <tr><td>%%</td><td>A literal percent sign (%).</td></tr>
+              </tbody>
+            </table>
+          </details>
+        </section>
+
+        <!-- Background -->
+        <section class="settings-section" id="section-background">
+          <h2 class="section-title">Custom Background</h2>
+          <p class="section-desc">
+            Upload images to use as background. Supported formats: JPG, PNG, GIF.<br>
+            Click a preview to remove it.
+          </p>
+
+          <div id="custombg_previews">
+            <div class="file-container">
+              <img src="images/icons/upload_image.png" class="icon">
+              <span class="message">Drop files here or click...</span>
+              <input type="file" id="custombg_uploader" accept="image/png,image/jpeg,image/gif" multiple>
+            </div>
+          </div>
+
+          <div class="section-actions">
+            <button id="custombg_prune" class="error-bg">Delete all backgrounds</button>
+          </div>
+        </section>
+
+        <!-- Font -->
+        <section class="settings-section" id="section-font">
+          <h2 class="section-title">Custom Font</h2>
+          <p class="section-desc">
+            Use any font installed on your local machine (case sensitive), or any font from
+            <a href="https://fonts.google.com/" target="_blank">Google Fonts</a>, which requires both Internet access and the Google Fonts option enabled.
+          </p>
+
+          <div class="setting-group">
+            <div class="setting-row setting-row--column">
+              <div class="setting-label">
+                <span>Font name</span>
+              </div>
+              <input type="text" id="customfont" placeholder="Type custom font here...">
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row">
+              <div class="setting-label">
+                <span>From Google Fonts</span>
+                <span class="setting-desc">Requires internet access to load the font</span>
+              </div>
+              <input type="checkbox" id="customfontgoogle">
+            </div>
+          </div>
+        </section>
+
+        <!-- HEX Background -->
+        <section class="settings-section" id="section-hexbg">
+          <h2 class="section-title">24h HEX Background</h2>
+          <p class="section-desc">
+            The background colour shifts throughout the day based on the current time in HEX format.<br>
+            Enabling this will disable the Custom Background.
+          </p>
+
+          <div class="hex-demo" id="hexbgdemobg">
+            <span class="hex-demo-label">Current: <span id="hexbgdemotext"></span></span>
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-row">
+              <div class="setting-label">
+                <span>Enable HEX background</span>
+                <span class="setting-desc">This will replace custom background</span>
+              </div>
+              <input type="checkbox" id="hexbg">
+            </div>
+          </div>
+        </section>
+
+        <!-- Weather -->
+        <section class="settings-section" id="section-weather">
+          <h2 class="section-title">Weather</h2>
+          <p class="section-desc">
+            Powered by <a href="https://api.met.no/" target="_blank">MET Norway</a>.
+          </p>
+
+          <div class="setting-group">
+            <div class="setting-row">
+              <div class="setting-label">
+                <span>Enable weather</span>
+              </div>
+              <input type="checkbox" id="wEnable">
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row">
+              <div class="setting-label">
+                <span>Show hourly forecast</span>
+              </div>
+              <input type="checkbox" id="wShowHourly">
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row setting-row--column">
+              <div class="setting-label">
+                <span>Days of daily forecast</span>
+                <span class="setting-desc">Set to 0 to disable</span>
+              </div>
+              <div class="slider-row">
+                <input type="range" id="wDailyDays" min="0" max="3" step="1">
+                <span class="slider-value" id="wDailyDays-label">0</span>
+              </div>
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row setting-row--column">
+              <div class="setting-label">
+                <span>Temperature unit</span>
+              </div>
+              <select id="temp_type">
+                <option value="celcius">Celsius (°C)</option>
+                <option value="fahrenheit">Fahrenheit (°F)</option>
+              </select>
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row">
+              <div class="setting-label">
+                <span>Pick location manually</span>
+                <span class="setting-desc">Click the map to set your coordinates</span>
+              </div>
+              <input type="checkbox" id="wManualLocation">
+            </div>
+          </div>
+
+          <div id="map">
+            <div class="map-coords">
+              <span id="wlat"></span>, <span id="wlon"></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Bookmarks -->
+        <section class="settings-section" id="section-bookmarks">
+          <h2 class="section-title">Bookmarks</h2>
+          <p class="section-desc">Add, remove and reorder your bookmarks shown on the homepage.</p>
+
+          <div class="setting-group">
+            <div class="setting-row" id="bmFavFirefox">
+              <div class="setting-label">
+                <span>Show favicons</span>
+                <span class="setting-desc">Display the site favicon next to each bookmark</span>
+              </div>
+              <input type="checkbox" id="bookmarksFavicon">
+            </div>
+          </div>
+
+          <div id="blist" class="bookmark-container"></div>
+
+          <div class="bookmark-container">
+            <div class="bookmark-item">
+              <input id="bookmark_name" class="secondary" placeholder="Bookmark name">
+              <input id="bookmark_url" class="secondary" placeholder="https://example.com">
+              <img id="add_bookmark" src="images/icons/bookmark_add.png" alt="Add bookmark">
+            </div>
+          </div>
+
+          <h3 class="subsection-title">Top Sites</h3>
+          <p class="section-desc">
+            Fetch your most visited sites from browser history as additional bookmarks.
+          </p>
+
+          <div class="setting-group">
+            <div class="setting-row">
+              <div class="setting-label">
+                <span>Enable Top Sites</span>
+              </div>
+              <input type="checkbox" id="bookmarksTopSitesEnabled">
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row setting-row--column">
+              <div class="setting-label">
+                <span>Number of top sites to show</span>
+                <span class="setting-desc">Between 1 and 10</span>
+              </div>
+              <input type="number" id="bookmarksTopSitesAmount" min="1" max="10" value="5">
+            </div>
+          </div>
+        </section>
+
+        <!-- Notepad -->
+        <section class="settings-section" id="section-notepad">
+          <h2 class="section-title">Notepad</h2>
+          <p class="section-desc">A persistent notepad available on the homepage.</p>
+
+          <div class="setting-group">
+            <div class="setting-row">
+              <div class="setting-label">
+                <span>Show notepad</span>
+                <span class="setting-desc">Toggle the notepad on the homepage</span>
+              </div>
+              <input type="checkbox" id="notepadEnabled">
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row">
+              <div class="setting-label">
+                <span>Show notes in popup</span>
+                <span class="setting-desc">Show the notepad in the extension popup, works independently of the toggle above</span>
+              </div>
+              <input type="checkbox" id="notepadInWindow">
+            </div>
+          </div>
+        </section>
+
+        <!-- Custom CSS -->
+        <section class="settings-section" id="section-customcss">
+          <h2 class="section-title">Custom CSS</h2>
+          <p class="section-desc">
+            Go wild, make the homepage more personal. You can do whatever you desire.
+          </p>
+          <textarea
+            id="customcss"
+            class="secondary-bg"
+            placeholder="Write some hot CSS in here...">
+          </textarea>
+        </section>
+
+        <!-- Backup -->
+        <section class="settings-section" id="section-backup">
+          <h2 class="section-title">Backup</h2>
+          <p class="section-desc">Back up your settings or restore them from a file.</p>
+
+          <div class="setting-group">
+            <div class="setting-row">
+              <div class="setting-label">
+                <span>Export settings</span>
+                <span class="setting-desc">Download all settings as a JSON file</span>
+              </div>
+              <button id="export-settings">Export</button>
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row">
+              <div class="setting-label">
+                <span>Import settings</span>
+                <span class="setting-desc">Restore settings from a JSON file</span>
+              </div>
+              <button id="import-settings-btn">Import</button>
+              <input type="file" id="import-settings-input" accept=".json" style="display: none">
+            </div>
+          </div>
+        </section>
+
+      </main>
     </div>
 
-    <!-- Very cool spacer lmao -->
-    <div style="padding: .1rem 0"></div>
-
-    <section id="settings-notification">
-      <!--
-        <div class="alert test">Testing the notification</div>
-        <div class="alert test change">Testing size</div>
-        <div class="alert test remove">Testing the notification but longer</div>
-      -->
-    </section>
+    <section id="settings-notification"></section>
 
     <script src="js/options.js"></script>
   </body>

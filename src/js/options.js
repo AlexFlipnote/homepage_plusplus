@@ -4,7 +4,7 @@ import Sortable from "sortablejs"
 import { isFirefox } from "./utils/browser.js"
 import { WorldMap } from "./utils/openstreetmap.js"
 import { HexClock } from "./utils/timeManager.js"
-import { availableLanguages } from "./utils/i18n.js"
+import { availableLanguages, translate } from "./utils/i18n.js"
 
 export const extensionSettings = {
   language: "",
@@ -247,7 +247,10 @@ function restoreOptions() {
     wShowHourly.onchange = () => { saveOptions(`Show hourly forecast set: ${wShowHourly.checked}`, wShowHourly.checked ? "add" : "remove") }
 
     const wDailyDays = document.getElementById("wDailyDays")
+    const wDailyDaysLabel = document.getElementById("wDailyDays-label")
     wDailyDays.value = items.wDailyDays
+    if (wDailyDaysLabel) wDailyDaysLabel.textContent = items.wDailyDays
+    wDailyDays.oninput = () => { if (wDailyDaysLabel) wDailyDaysLabel.textContent = wDailyDays.value }
     wDailyDays.onchange = () => { saveOptions(`Daily forecast days set: ${wDailyDays.value}`, "change") }
 
     const showSettings = document.getElementById("show-settings")
@@ -348,6 +351,28 @@ function createPreview(image, target) {
 // This part of the code loads only when touching options.html
 if (document.getElementById("settings-notification")) {
   document.addEventListener("DOMContentLoaded", () => {
+    function activateSection(name) {
+      const section = document.getElementById("section-" + name)
+      if (!section) return
+      document.querySelectorAll(".sidebar-item").forEach(b => b.classList.remove("active"))
+      document.querySelectorAll(".settings-section").forEach(s => s.classList.remove("active"))
+      const btn = document.querySelector(`.sidebar-item[data-section="${name}"]`)
+      if (btn) btn.classList.add("active")
+      section.classList.add("active")
+      document.querySelector(".settings-content").scrollTop = 0
+    }
+
+    document.querySelectorAll(".sidebar-item").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const name = btn.dataset.section.replace(/\s+/g, "_")
+        location.hash = name
+        activateSection(name)
+      })
+    })
+
+    const hash = location.hash.slice(1)
+    if (hash) activateSection(hash)
+
     const languages = document.getElementById("language")
     for (const [k, v] of Object.entries(availableLanguages({hideDefault: true}))) {
       const option = document.createElement("option")
@@ -448,12 +473,13 @@ if (document.getElementById("settings-notification")) {
 
 // This part loads only on window.html
 if (document.getElementById("window-notepad-text")) {
-  chrome.storage.local.get({ notepadEnabled: false, notepadInWindow: false, notepadContent: "" }, (items) => {
-    if (!items.notepadEnabled || !items.notepadInWindow) return
+  chrome.storage.local.get({ notepadInWindow: false, notepadContent: "", language: "" }, (items) => {
+    if (!items.notepadInWindow) return
     const section = document.getElementById("window-notepad-section")
     const text = document.getElementById("window-notepad-text")
     section.style.display = "block"
     text.value = items.notepadContent
+    text.placeholder = translate(items.language, "notepad.placeholder")
 
     let saveTimeout = null
     text.addEventListener("input", () => {

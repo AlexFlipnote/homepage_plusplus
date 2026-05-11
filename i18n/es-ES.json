@@ -86,5 +86,6 @@
   "weather.snow": "Nieve",
   "weather.snowandthunder": "Nieve y tormenta",
   "weather.snowshowers": "Chubascos de nieve",
-  "weather.snowshowersandthunder": "Chubascos de nieve y tormenta"
+  "weather.snowshowersandthunder": "Chubascos de nieve y tormenta",
+  "notepad.placeholder": "Escribe algunas notas..."
 }
