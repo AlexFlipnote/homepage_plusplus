@@ -138,10 +138,6 @@ if (isExtension) {
           scheduleWeatherRefresh(weatherPosition)
         })
       }
-
-      document.getElementById("wrefresh").addEventListener("click", () => {
-        if (weatherPosition) getWeather(items, weatherPosition, items.language, true)
-      })
     }
 
     const bookmarks = document.getElementById("bookmarks")

@@ -109,29 +109,4 @@
     width: 4.5rem;
   }
 
-  #wrefresh {
-    background: transparent;
-    border: none;
-    bottom: .5rem;
-    cursor: pointer;
-    height: 1.25rem;
-    opacity: 0;
-    padding: 0;
-    position: absolute;
-    right: .5rem;
-    transition: opacity .2s ease;
-    width: 1.25rem;
-
-    svg {
-      fill: var(--font-secondary);
-      height: 1rem;
-      transition: transform .4s ease;
-      width: 1rem;
-    }
-
-    &:hover svg { transform: rotate(180deg); }
-    &:active { box-shadow: none; filter: none; transform: none; }
-  }
-
-  &:hover #wrefresh { opacity: 1; }
 }
