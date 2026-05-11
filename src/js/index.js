@@ -105,6 +105,8 @@ if (isExtension) {
     }
 
     if (items.wEnable) {
+      let weatherPosition = null
+
       const scheduleWeatherRefresh = (position) => {
         const now = new Date()
         const next = new Date(now)
@@ -126,15 +128,20 @@ if (isExtension) {
       }
 
       if (items.wManualLocation) {
-        const position = new ManualPosition(items.wlat, items.wlon)
-        getWeather(items, position, items.language)
-        scheduleWeatherRefresh(position)
+        weatherPosition = new ManualPosition(items.wlat, items.wlon)
+        getWeather(items, weatherPosition, items.language)
+        scheduleWeatherRefresh(weatherPosition)
       } else {
         navigator.geolocation.getCurrentPosition((position) => {
-          getWeather(items, position, items.language)
-          scheduleWeatherRefresh(position)
+          weatherPosition = position
+          getWeather(items, weatherPosition, items.language)
+          scheduleWeatherRefresh(weatherPosition)
         })
       }
+
+      document.getElementById("wrefresh").addEventListener("click", () => {
+        if (weatherPosition) getWeather(items, weatherPosition, items.language, true)
+      })
     }
 
     const bookmarks = document.getElementById("bookmarks")
@@ -153,6 +160,20 @@ if (isExtension) {
       const searchInput = document.getElementById("search-input")
       searchInput.placeholder = translate(items.language, "search.placeholder")
       searchForm.style.display = "block"
+
+      document.addEventListener("keydown", (e) => {
+        const notepadEl = document.getElementById("notepad")
+        if (
+          e.key.length === 1 &&
+          !e.ctrlKey && !e.metaKey && !e.altKey &&
+          document.activeElement !== searchInput &&
+          document.activeElement.tagName !== "INPUT" &&
+          document.activeElement.tagName !== "TEXTAREA" &&
+          !(notepadEl && notepadEl.classList.contains("open"))
+        ) {
+          searchInput.focus()
+        }
+      })
     }
 
     if (items.bookmarksTopSitesEnabled) {
@@ -194,6 +215,107 @@ if (isExtension) {
     if (items.showSettings) {
       const settings = document.getElementById("settings")
       settings.removeAttribute("style")
+    }
+
+    if (items.notepadEnabled) {
+      const notepadEl = document.getElementById("notepad")
+      const notepadText = document.getElementById("notepad-text")
+      const notepadClose = notepadEl.querySelector(".notepad-close")
+      const notepadResize = notepadEl.querySelector(".notepad-resize")
+
+      const updateScrollbarState = () => {
+        notepadEl.classList.toggle("scrollbar-visible", notepadText.scrollHeight > notepadText.clientHeight)
+      }
+
+      notepadEl.removeAttribute("style")
+
+      let notepadWidth = items.notepadWidth || 300
+      let notepadHeight = items.notepadHeight || 220
+      notepadEl.style.setProperty("--notepad-width", `${notepadWidth}px`)
+      notepadEl.style.setProperty("--notepad-height", `${notepadHeight}px`)
+
+      if (items.notepadContent) {
+        notepadText.value = items.notepadContent
+      }
+
+      if (items.notepadOpen) {
+        notepadEl.classList.add("open")
+        requestAnimationFrame(updateScrollbarState)
+      }
+
+      notepadEl.addEventListener("click", (e) => {
+        if (!notepadEl.classList.contains("open")) {
+          notepadEl.classList.add("open")
+          chrome.storage.local.set({ notepadOpen: true })
+          requestAnimationFrame(updateScrollbarState)
+          setTimeout(() => notepadText.focus(), 200)
+        }
+      })
+
+      notepadClose.addEventListener("click", (e) => {
+        e.stopPropagation()
+        notepadEl.classList.remove("open")
+        chrome.storage.local.set({ notepadOpen: false })
+      })
+
+      let saveContentTimeout = null
+      notepadText.addEventListener("input", () => {
+        updateScrollbarState()
+        clearTimeout(saveContentTimeout)
+        saveContentTimeout = setTimeout(() => {
+          chrome.storage.local.set({ notepadContent: notepadText.value })
+        }, 500)
+      })
+
+      const notepadPadding = () => 1.5 * parseFloat(getComputedStyle(document.documentElement).fontSize)
+      const maxNotepadWidth = () => window.innerWidth - notepadPadding() * 2
+      const maxNotepadHeight = () => window.innerHeight - notepadPadding() * 2
+
+      const applyNotepadSize = () => {
+        notepadEl.style.setProperty("--notepad-width", `${notepadWidth}px`)
+        notepadEl.style.setProperty("--notepad-height", `${notepadHeight}px`)
+        updateScrollbarState()
+      }
+
+      let isResizing = false
+      let resizeStartX, resizeStartY, resizeStartWidth, resizeStartHeight
+
+      notepadResize.addEventListener("mousedown", (e) => {
+        isResizing = true
+        resizeStartX = e.clientX
+        resizeStartY = e.clientY
+        resizeStartWidth = notepadWidth
+        resizeStartHeight = notepadHeight
+        notepadEl.classList.add("resizing")
+        e.preventDefault()
+      })
+
+      document.addEventListener("mousemove", (e) => {
+        if (!isResizing) return
+        const dx = e.clientX - resizeStartX
+        const dy = e.clientY - resizeStartY
+        notepadWidth = Math.max(180, Math.min(maxNotepadWidth(), resizeStartWidth - dx))
+        notepadHeight = Math.max(100, Math.min(maxNotepadHeight(), resizeStartHeight + dy))
+        applyNotepadSize()
+      })
+
+      document.addEventListener("mouseup", () => {
+        if (!isResizing) return
+        isResizing = false
+        notepadEl.classList.remove("resizing")
+        chrome.storage.local.set({ notepadWidth, notepadHeight })
+      })
+
+      window.addEventListener("resize", () => {
+        const clampedWidth = Math.min(notepadWidth, maxNotepadWidth())
+        const clampedHeight = Math.min(notepadHeight, maxNotepadHeight())
+        if (clampedWidth !== notepadWidth || clampedHeight !== notepadHeight) {
+          notepadWidth = clampedWidth
+          notepadHeight = clampedHeight
+          applyNotepadSize()
+          chrome.storage.local.set({ notepadWidth, notepadHeight })
+        }
+      })
     }
   })
 
@@ -274,6 +396,84 @@ if (isExtension) {
   // Toggle bookmarks
   document.getElementById("bookmarksToggle").onclick = function() {
     turnSwitch(document.getElementById("bookmarks"), "flex")
+  }
+
+  // Toggle notepad (demo: no storage, factory new state)
+  document.getElementById("notepadToggle").onclick = function() {
+    const notepadEl = document.getElementById("notepad")
+    const notepadText = document.getElementById("notepad-text")
+    const notepadClose = notepadEl.querySelector(".notepad-close")
+    const notepadResize = notepadEl.querySelector(".notepad-resize")
+
+    if (notepadEl.style.display !== "none") {
+      notepadEl.style.display = "none"
+      notepadEl.classList.remove("open")
+      return
+    }
+
+    notepadEl.style.display = ""
+
+    let notepadWidth = 300
+    let notepadHeight = 220
+    notepadEl.style.setProperty("--notepad-width", `${notepadWidth}px`)
+    notepadEl.style.setProperty("--notepad-height", `${notepadHeight}px`)
+
+    const updateScrollbarState = () => {
+      notepadEl.classList.toggle("scrollbar-visible", notepadText.scrollHeight > notepadText.clientHeight)
+    }
+
+    notepadEl.onclick = (e) => {
+      if (!notepadEl.classList.contains("open")) {
+        notepadEl.classList.add("open")
+        requestAnimationFrame(updateScrollbarState)
+        setTimeout(() => notepadText.focus(), 200)
+      }
+    }
+
+    notepadClose.onclick = (e) => {
+      e.stopPropagation()
+      notepadEl.classList.remove("open")
+    }
+
+    notepadText.oninput = () => updateScrollbarState()
+
+    const notepadPadding = () => 1.5 * parseFloat(getComputedStyle(document.documentElement).fontSize)
+    const maxNotepadWidth = () => window.innerWidth - notepadPadding() * 2
+    const maxNotepadHeight = () => window.innerHeight - notepadPadding() * 2
+
+    const applyNotepadSize = () => {
+      notepadEl.style.setProperty("--notepad-width", `${notepadWidth}px`)
+      notepadEl.style.setProperty("--notepad-height", `${notepadHeight}px`)
+      updateScrollbarState()
+    }
+
+    let isResizing = false
+    let resizeStartX, resizeStartY, resizeStartWidth, resizeStartHeight
+
+    notepadResize.onmousedown = (e) => {
+      isResizing = true
+      resizeStartX = e.clientX
+      resizeStartY = e.clientY
+      resizeStartWidth = notepadWidth
+      resizeStartHeight = notepadHeight
+      notepadEl.classList.add("resizing")
+      e.preventDefault()
+    }
+
+    document.addEventListener("mousemove", (e) => {
+      if (!isResizing) return
+      const dx = e.clientX - resizeStartX
+      const dy = e.clientY - resizeStartY
+      notepadWidth = Math.max(180, Math.min(maxNotepadWidth(), resizeStartWidth - dx))
+      notepadHeight = Math.max(100, Math.min(maxNotepadHeight(), resizeStartHeight + dy))
+      applyNotepadSize()
+    })
+
+    document.addEventListener("mouseup", () => {
+      if (!isResizing) return
+      isResizing = false
+      notepadEl.classList.remove("resizing")
+    })
   }
 
   // Toggle search bar

@@ -1,0 +1,198 @@
+$notepad-icon-size: 3rem;
+$notepad-default-width: 300px;
+$notepad-default-height: 220px;
+$notepad-scrollbar-inset: .4rem; // distance from right wall to scrollbar
+
+$notepad-pencil-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/%3E%3C/svg%3E");
+
+// Tune these two values to adjust the collapse icon
+$notepad-collapse-sw:  1.5; // stroke width in SVG units
+$notepad-collapse-gap: 1.75;   // gap from center to each inner corner tip (set equal to sw for gap ≈ line width)
+$notepad-collapse-arm: 5; // arm length outward from each corner
+
+$notepad-collapse-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='#{$notepad-collapse-sw}' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='#{12 + $notepad-collapse-gap} #{12 - $notepad-collapse-gap - $notepad-collapse-arm} #{12 + $notepad-collapse-gap} #{12 - $notepad-collapse-gap} #{12 + $notepad-collapse-gap + $notepad-collapse-arm} #{12 - $notepad-collapse-gap}'/%3E%3Cpolyline points='#{12 - $notepad-collapse-gap} #{12 + $notepad-collapse-gap + $notepad-collapse-arm} #{12 - $notepad-collapse-gap} #{12 + $notepad-collapse-gap} #{12 - $notepad-collapse-gap - $notepad-collapse-arm} #{12 + $notepad-collapse-gap}'/%3E%3C/svg%3E");
+
+#notepad {
+  backdrop-filter: var(--blur-normal);
+  background-color: var(--highlight-alpha);
+  border-radius: 1rem;
+  cursor: pointer;
+  height: $notepad-icon-size;
+  position: absolute;
+  right: 1.5rem;
+  top: 1.5rem;
+  transition: width .2s ease, height .2s ease;
+  width: $notepad-icon-size;
+  z-index: 99999999;
+
+  &::before {
+    background-color: var(--font-primary);
+    content: "";
+    inset: 0;
+    -webkit-mask-image: $notepad-pencil-icon;
+    mask-image: $notepad-pencil-icon;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: 1.5rem 1.5rem;
+    mask-size: 1.5rem 1.5rem;
+    position: absolute;
+    transition: background-color .3s ease, opacity .15s ease, transform .3s ease;
+    z-index: 1;
+  }
+
+  &:hover::before {
+    transform: rotate(-15deg);
+    background-color: var(--font-secondary);
+  }
+
+  .notepad-inner {
+    border-radius: inherit;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    inset: 0;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    position: absolute;
+    transition: opacity .1s ease;
+    width: 100%;
+    z-index: 2;
+  }
+
+  &.open {
+    cursor: default;
+    height: var(--notepad-height, #{$notepad-default-height});
+    width: var(--notepad-width, #{$notepad-default-width});
+
+    &::before {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .notepad-inner {
+      opacity: 1;
+      pointer-events: all;
+      transition-delay: .1s;
+    }
+  }
+
+  &.resizing { transition: none !important; }
+
+  .notepad-header {
+    align-items: center;
+    display: flex;
+    justify-content: flex-end;
+    margin: .45rem .5rem;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 3;
+  }
+
+  &.scrollbar-visible .notepad-header {
+    margin-right: calc(.5rem + .6rem);
+  }
+
+  .notepad-close {
+    background: transparent;
+    fill: rgba(255, 255, 255, .6);
+    border-radius: .25rem;
+    border: none;
+    color: var(--font-secondary);
+    cursor: pointer;
+    flex-shrink: 0;
+    height: 1.4rem;
+    padding: 0;
+    position: relative;
+    transition: color .2s ease, background-color .2s ease;
+    width: 1.4rem;
+
+    &::before {
+      background-color: currentColor;
+      content: "";
+      inset: 0;
+      -webkit-mask-image: $notepad-collapse-icon;
+      mask-image: $notepad-collapse-icon;
+      -webkit-mask-position: center;
+      mask-position: center;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-size: 1.5rem 1.5rem;
+      mask-size: 1.5rem 1.5rem;
+      position: absolute;
+      transition: background-color .2s ease;
+    }
+
+    &:hover {
+      background-color: rgba(255, 255, 255, .1);
+      box-shadow: none;
+      color: var(--font-primary);
+    }
+
+    &:active {
+      box-shadow: none;
+      filter: none;
+      transform: none;
+    }
+  }
+
+  #notepad-text {
+    background: transparent;
+    border: none;
+    box-sizing: border-box;
+    color: var(--font-primary);
+    flex: 1;
+    font-family: inherit;
+    font-size: .9rem;
+    line-height: 1.5;
+    min-height: 0;
+    outline: none;
+    padding: .4rem 1.5rem .5rem 1.5rem;
+    resize: none;
+    width: calc(100% - #{$notepad-scrollbar-inset});
+
+    &:hover, &:focus { box-shadow: none; }
+
+    &::placeholder { color: rgba(255, 255, 255, .3); }
+
+    &::-webkit-scrollbar { width: .6rem; }
+    &::-webkit-scrollbar-track { background: transparent; margin-block: .5rem; }
+    &::-webkit-scrollbar-thumb {
+      cursor: default;
+      background-clip: padding-box;
+      background-color: rgba(255, 255, 255, .2);
+      border-radius: 3rem;
+      border: .1rem solid transparent;
+
+      &:hover { background-color: rgba(255, 255, 255, .35); }
+    }
+  }
+
+  .notepad-resize {
+    bottom: 0;
+    cursor: sw-resize;
+    height: 1.25rem;
+    left: 0;
+    position: absolute;
+    width: 1.25rem;
+
+    &::before {
+      border-bottom: .15rem solid rgba(255, 255, 255, .6);
+      border-bottom-left-radius: .45rem;
+      border-left: .15rem solid rgba(255, 255, 255, .6);
+      bottom: .4rem;
+      content: "";
+      height: .55rem;
+      left: .4rem;
+      position: absolute;
+      width: .55rem;
+
+      &::hover {
+        border-color: rgba(255, 255, 255, .9);
+      }
+    }
+  }
+}

@@ -30,7 +30,13 @@ export const extensionSettings = {
   wDailyDays: 0,
   hexbg: false,
   showSettings: true,
-  customcss: ""
+  customcss: "",
+  notepadEnabled: false,
+  notepadInWindow: false,
+  notepadOpen: false,
+  notepadContent: "",
+  notepadWidth: 300,
+  notepadHeight: 220
 }
 
 // We don't care where it loads, if it finds it, replace it
@@ -49,6 +55,44 @@ function createAlert(message, css="") {
   alert.textContent = message || "Options saved"
   notification.appendChild(alert)
   setTimeout(() => { alert.remove() }, 3000)
+}
+
+function exportSettings() {
+  chrome.storage.local.get({ ...extensionSettings }, (items) => {
+    const json = JSON.stringify(items, null, 2)
+    const blob = new Blob([json], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "homepage_settings.json"
+    a.click()
+    URL.revokeObjectURL(url)
+    createAlert("Settings exported")
+  })
+}
+
+function importSettings(file) {
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result)
+      const filtered = {}
+      for (const key of Object.keys(extensionSettings)) {
+        if (key in data) filtered[key] = data[key]
+      }
+      if (Object.keys(filtered).length === 0) {
+        createAlert("No valid settings found in file", "remove")
+        return
+      }
+      chrome.storage.local.set(filtered, () => {
+        createAlert("Settings imported, reloading...", "change")
+        setTimeout(() => location.reload(), 1200)
+      })
+    } catch {
+      createAlert("Invalid settings file", "remove")
+    }
+  }
+  reader.readAsText(file)
 }
 
 // Saves options to chrome.storage
@@ -96,7 +140,9 @@ function saveOptions(message, css="") {
     bookmarksTopSitesEnabled: document.getElementById("bookmarksTopSitesEnabled").checked,
     bookmarksTopSitesAmount: parseInt(document.getElementById("bookmarksTopSitesAmount").value) || 5,
     customcss: document.getElementById("customcss").value,
-    bookmarks: fetchBookmarkInputs()
+    bookmarks: fetchBookmarkInputs(),
+    notepadEnabled: document.getElementById("notepadEnabled").checked,
+    notepadInWindow: document.getElementById("notepadInWindow").checked
   }, () => {
     createAlert(message, css)
   })
@@ -211,6 +257,14 @@ function restoreOptions() {
     const customcss = document.getElementById("customcss")
     customcss.value = items.customcss
     customcss.onchange = () => { saveOptions("Custom CSS changed") }
+
+    const notepadEnabled = document.getElementById("notepadEnabled")
+    notepadEnabled.checked = items.notepadEnabled
+    notepadEnabled.onchange = () => { saveOptions(`Notepad set: ${notepadEnabled.checked}`, notepadEnabled.checked ? "add" : "remove") }
+
+    const notepadInWindow = document.getElementById("notepadInWindow")
+    notepadInWindow.checked = items.notepadInWindow
+    notepadInWindow.onchange = () => { saveOptions(`Notepad in window set: ${notepadInWindow.checked}`, notepadInWindow.checked ? "add" : "remove") }
 
     const bookmarksTopSitesEnabled = document.getElementById("bookmarksTopSitesEnabled")
     bookmarksTopSitesEnabled.checked = items.bookmarksTopSitesEnabled
@@ -378,4 +432,35 @@ if (document.getElementById("settings-notification")) {
 
   document.addEventListener("DOMContentLoaded", restoreOptions)
   document.getElementById("custombg_prune").addEventListener("click", custombgPrune)
+
+  document.getElementById("export-settings").addEventListener("click", exportSettings)
+
+  document.getElementById("import-settings-input").addEventListener("change", (e) => {
+    const file = e.target.files[0]
+    if (file) importSettings(file)
+    e.target.value = ""
+  })
+
+  document.getElementById("import-settings-btn").addEventListener("click", () => {
+    document.getElementById("import-settings-input").click()
+  })
+}
+
+// This part loads only on window.html
+if (document.getElementById("window-notepad-text")) {
+  chrome.storage.local.get({ notepadEnabled: false, notepadInWindow: false, notepadContent: "" }, (items) => {
+    if (!items.notepadEnabled || !items.notepadInWindow) return
+    const section = document.getElementById("window-notepad-section")
+    const text = document.getElementById("window-notepad-text")
+    section.style.display = "block"
+    text.value = items.notepadContent
+
+    let saveTimeout = null
+    text.addEventListener("input", () => {
+      clearTimeout(saveTimeout)
+      saveTimeout = setTimeout(() => {
+        chrome.storage.local.set({ notepadContent: text.value })
+      }, 500)
+    })
+  })
 }

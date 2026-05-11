@@ -1,29 +1,45 @@
 // Variables
 $settings-icon-size: 3rem;
+$daily-days-input-width: 13rem;
 
 $preview-image-width: 15rem;
 $preview-image-height: 8.75rem;
 
+$settings-gear-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M15.95 10.78c.03-.25.05-.51.05-.78s-.02-.53-.06-.78l1.69-1.32c.15-.12.19-.34.1-.51l-1.6-2.77c-.1-.18-.31-.24-.49-.18l-1.99.8c-.42-.32-.86-.58-1.35-.78L12 2.34c-.03-.2-.2-.34-.4-.34H8.4c-.2 0-.36.14-.39.34l-.3 2.12c-.49.2-.94.47-1.35.78l-1.99-.8c-.18-.07-.39 0-.49.18l-1.6 2.77c-.1.18-.06.39.1.51l1.69 1.32c-.04.25-.07.52-.07.78s.02.53.06.78L2.37 12.1c-.15.12-.19.34-.1.51l1.6 2.77c.1.18.31.24.49.18l1.99-.8c.42.32.86.58 1.35.78l.3 2.12c.04.2.2.34.4.34h3.2c.2 0 .37-.14.39-.34l.3-2.12c.49-.2.94-.47 1.35-.78l1.99.8c.18.07.39 0 .49-.18l1.6-2.77c.1-.18.06-.39-.1-.51l-1.67-1.32zM10 13c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3z'/%3E%3C/svg%3E");
+
 // index.html / Settings cog
 #settings {
+  backdrop-filter: var(--blur-normal);
+  background-color: var(--highlight-alpha);
+  border-radius: 1rem;
   bottom: 1.5rem;
-  color: var(--font-primary);
+  display: block;
   height: $settings-icon-size;
   margin: 0;
   position: absolute;
   right: 1.5rem;
   text-decoration: none;
+  width: $settings-icon-size;
 
-  .settings-icon {
-    fill: var(--font-primary);
-    height: $settings-icon-size;
-    transition: transform .3s ease, fill .3s ease;
-    width: $settings-icon-size;
+  &::before {
+    background-color: var(--font-primary);
+    content: "";
+    inset: 0;
+    -webkit-mask-image: $settings-gear-icon;
+    mask-image: $settings-gear-icon;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: 1.5rem 1.5rem;
+    mask-size: 1.5rem 1.5rem;
+    position: absolute;
+    transition: background-color .3s ease, transform .3s ease;
+  }
 
-    &:hover {
-      fill: var(--font-secondary);
-      transform: rotate(45deg);
-    }
+  &:hover::before {
+    background-color: var(--font-secondary);
+    transform: rotate(60deg);
   }
 }
 
@@ -38,6 +54,8 @@ $preview-image-height: 8.75rem;
   padding: 1rem;
   position: relative;
 }
+
+#wDailyDays { width: $daily-days-input-width; }
 
 .container {
   box-sizing: border-box;
@@ -103,6 +121,76 @@ $preview-image-height: 8.75rem;
   &:hover { box-shadow: 0 0 15px rgba(0, 0, 0, .7); }
 }
 
+
+// window.html cog button
+#window-settings-btn {
+  border-radius: .35rem;
+  display: block;
+  height: 1.75rem;
+  position: absolute;
+  right: .5rem;
+  top: .5rem;
+  width: 1.75rem;
+  z-index: 1;
+
+  &::before {
+    background-color: var(--font-secondary);
+    content: "";
+    inset: 0;
+    -webkit-mask-image: $settings-gear-icon;
+    mask-image: $settings-gear-icon;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: 1.25rem 1.25rem;
+    mask-size: 1.25rem 1.25rem;
+    position: absolute;
+    transition: background-color .2s ease;
+  }
+
+  &:hover::before { background-color: var(--font-primary); }
+}
+
+// window.html notepad — kill the box-container bottom gap
+body:has(#window-notepad-section) .box-container { margin-bottom: 0; }
+
+// window.html notepad
+#window-notepad-section {
+  background-color: var(--primary);
+  width: 100%;
+}
+
+#window-notepad-text {
+  background: var(--highlight);
+  border: none;
+  box-sizing: border-box;
+  color: var(--font-primary);
+  display: block;
+  font-family: inherit;
+  font-size: .85rem;
+  height: 15rem;
+  line-height: 1.5;
+  outline: none;
+  overflow-y: auto;
+  padding: .5rem .75rem .6rem;
+  resize: none;
+  width: 100%;
+
+  &:hover, &:focus { box-shadow: none; }
+  &::placeholder { color: rgba(255, 255, 255, .3); }
+
+  &::-webkit-scrollbar { width: .6rem; }
+  &::-webkit-scrollbar-track { background: transparent; margin-block: .5rem; }
+  &::-webkit-scrollbar-thumb {
+    background-clip: padding-box;
+    background-color: rgba(255, 255, 255, .2);
+    border-radius: 3rem;
+    border: .1rem solid transparent;
+
+    &:hover { background-color: rgba(255, 255, 255, .35); }
+  }
+}
 
 #settings-notification {
   position: fixed;
