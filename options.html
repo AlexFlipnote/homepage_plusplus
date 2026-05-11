@@ -24,13 +24,29 @@
         </label>
         <div class="flex-grid">
           <div class="col-xs-6">
-            <label><input type="checkbox" id="show-settings"> Show settings button</label>
-            <label><input type="checkbox" id="animations"> Enable animations</label>
-          </div>
-          <div class="col-xs-6">
-            <label><input type="checkbox" id="searchbar"> Show search bar</label>
             <label><input type="checkbox" id="show_time"> Show time</label>
             <label><input type="checkbox" id="show_date"> Show date</label>
+            <label><input type="checkbox" id="searchbar"> Show search bar</label>
+          </div>
+          <div class="col-xs-6">
+            <label><input type="checkbox" id="show-settings"> Show settings button</label>
+            <label><input type="checkbox" id="notepadEnabled"> Show notepad</label>
+            <label><input type="checkbox" id="notepadInWindow"> Show notes in popup</label>
+            <label><input type="checkbox" id="animations"> Enable animations</label>
+          </div>
+        </div>
+        <br>
+        <div class="flex-grid">
+          <div class="col-xs-6">
+            <label>
+              <button id="export-settings">Export settings</button>
+            </label>
+          </div>
+          <div class="col-xs-6">
+            <label>
+              <button id="import-settings-btn">Import settings</button>
+              <input type="file" id="import-settings-input" accept=".json" style="display: none">
+            </label>
           </div>
         </div>
       </div>
@@ -230,7 +246,7 @@
         </label>
         <label class="column secondary-bg">
           Days of daily forecast (0 = disabled):
-          <input type="number" style="width: 13rem" id="wDailyDays" min="0" max="3" step="1">
+          <input type="number" id="wDailyDays" min="0" max="3" step="1">
         </label>
         <label class="column secondary-bg">
           Temperature type:
