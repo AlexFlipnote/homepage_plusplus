@@ -1,7 +1,6 @@
-import * as manifest from "../manifest.json"
 import Sortable from "sortablejs"
 
-import { isFirefox } from "./utils/browser.js"
+import { isFirefox, version } from "./utils/browser.js"
 import { WorldMap } from "./utils/openstreetmap.js"
 import { HexClock } from "./utils/timeManager.js"
 import { availableLanguages, translate } from "./utils/i18n.js"
@@ -36,13 +35,34 @@ export const extensionSettings = {
   notepadOpen: false,
   notepadContent: "",
   notepadWidth: 300,
-  notepadHeight: 220
+  notepadHeight: 220,
+  clock_style: 0
+}
+
+const URLS = {
+  google_fonts: { href: "https://fonts.google.com/", label: "Google Fonts" },
+  met_norway: { href: "https://api.met.no/", label: "MET Norway" }
+}
+
+function applyTranslations(lang) {
+  document.querySelectorAll("[data-translate]").forEach(el => {
+    let text = translate(lang, el.dataset.translate)
+    text = text.replace(/\n/g, "<br>")
+    text = text.replace(/\{url:(\w+)\}/g, (_, key) => {
+      const u = URLS[key]
+      return u ? `<a href="${u.href}" target="_blank">${u.label}</a>` : key
+    })
+    text = text.replace(/`([^`]+)`/g, "<code>$1</code>")
+    text = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    text = text.replace(/\*([^*]+)\*/g, "<em>$1</em>")
+    el.innerHTML = text
+  })
 }
 
 // We don't care where it loads, if it finds it, replace it
 const findVersion = document.getElementById("version-label")
 if (findVersion) {
-  findVersion.textContent = `v${manifest.version}`
+  findVersion.textContent = `v${version}`
 }
 
 const userMap = new WorldMap()
@@ -142,7 +162,8 @@ function saveOptions(message, css="") {
     customcss: document.getElementById("customcss").value,
     bookmarks: fetchBookmarkInputs(),
     notepadEnabled: document.getElementById("notepadEnabled").checked,
-    notepadInWindow: document.getElementById("notepadInWindow").checked
+    notepadInWindow: document.getElementById("notepadInWindow").checked,
+    clock_style: parseInt(document.getElementById("clock_style").value)
   }, () => {
     createAlert(message, css)
   })
@@ -175,7 +196,12 @@ function restoreOptions() {
   chrome.storage.local.get({ ...extensionSettings }, (items) => {
     const language = document.getElementById("language")
     language.value = items.language
-    language.onchange = () => { saveOptions(`Language changed: ${language.value || "default"}`, "change") }
+    language.onchange = () => {
+      saveOptions(`Language changed: ${language.value || "default"}`, "change")
+      applyTranslations(language.value)
+    }
+
+    applyTranslations(items.language)
 
     const animations = document.getElementById("animations")
     animations.checked = items.animations
@@ -221,6 +247,10 @@ function restoreOptions() {
     const fmtDate = document.getElementById("fmt_date")
     fmtDate.value = items.fmt_date
     fmtDate.onchange = () => { saveOptions(`Date format set: ${fmtDate.value || "default"}`, fmtDate.value ? "change" : "remove") }
+
+    const clockStyle = document.getElementById("clock_style")
+    clockStyle.value = items.clock_style
+    clockStyle.onchange = () => { saveOptions(`Clock style set: ${clockStyle.value}`, "change") }
 
     const customfont = document.getElementById("customfont")
     customfont.value = items.customfont
@@ -274,7 +304,10 @@ function restoreOptions() {
     bookmarksTopSitesEnabled.onchange = () => { saveOptions(`Bookmarks top sites set: ${bookmarksTopSitesEnabled.checked}`, bookmarksTopSitesEnabled.checked ? "add" : "remove") }
 
     const bookmarksTopSitesAmount = document.getElementById("bookmarksTopSitesAmount")
+    const bookmarksTopSitesAmountLabel = document.getElementById("bookmarksTopSitesAmount-label")
     bookmarksTopSitesAmount.value = items.bookmarksTopSitesAmount
+    if (bookmarksTopSitesAmountLabel) bookmarksTopSitesAmountLabel.textContent = items.bookmarksTopSitesAmount
+    bookmarksTopSitesAmount.oninput = () => { if (bookmarksTopSitesAmountLabel) bookmarksTopSitesAmountLabel.textContent = bookmarksTopSitesAmount.value }
     bookmarksTopSitesAmount.onchange = () => { saveOptions(`Bookmarks top sites amount set: ${bookmarksTopSitesAmount.value}`, "change") }
 
     const bookmarksFavicon = document.getElementById("bookmarksFavicon")
@@ -351,27 +384,82 @@ function createPreview(image, target) {
 // This part of the code loads only when touching options.html
 if (document.getElementById("settings-notification")) {
   document.addEventListener("DOMContentLoaded", () => {
-    function activateSection(name) {
-      const section = document.getElementById("section-" + name)
-      if (!section) return
+    const categoryMap = {
+      general: ["general", "timestamp"],
+      appearance: ["background", "font", "hexbg"],
+      features: ["weather", "bookmarks", "notepad"],
+      advanced: ["customcss", "backup"]
+    }
+
+    const sectionToCategory = {}
+    for (const [cat, sections] of Object.entries(categoryMap)) {
+      for (const s of sections) sectionToCategory[s] = cat
+    }
+
+    const content = document.querySelector(".settings-content")
+
+    function setActiveSidebarItem(name) {
       document.querySelectorAll(".sidebar-item").forEach(b => b.classList.remove("active"))
-      document.querySelectorAll(".settings-section").forEach(s => s.classList.remove("active"))
       const btn = document.querySelector(`.sidebar-item[data-section="${name}"]`)
       if (btn) btn.classList.add("active")
-      section.classList.add("active")
-      document.querySelector(".settings-content").scrollTop = 0
     }
+
+    function activateCategory(categoryName) {
+      document.querySelectorAll(".settings-section").forEach(s => s.classList.remove("active"))
+      const sections = categoryMap[categoryName] || []
+      sections.forEach(name => {
+        const s = document.getElementById("section-" + name)
+        if (s) s.classList.add("active")
+      })
+    }
+
+    function navigateTo(sectionName) {
+      const category = sectionToCategory[sectionName]
+      if (!category) return
+
+      activateCategory(category)
+      setActiveSidebarItem(sectionName)
+      location.hash = sectionName
+
+      requestAnimationFrame(() => {
+        const target = document.getElementById("section-" + sectionName)
+        if (!target) return
+        if (categoryMap[category][0] === sectionName) {
+          content.scrollTop = 0
+        } else {
+          const top = target.getBoundingClientRect().top - content.getBoundingClientRect().top + content.scrollTop
+          content.scrollTop = top
+        }
+      })
+    }
+
+    content.addEventListener("scroll", () => {
+      const threshold = 80
+      const activeSections = [...document.querySelectorAll(".settings-section.active")]
+      const contentTop = content.getBoundingClientRect().top
+
+      let current = activeSections[0]
+      for (const section of activeSections) {
+        const top = section.getBoundingClientRect().top - contentTop
+        if (top <= threshold) current = section
+      }
+
+      if (current) setActiveSidebarItem(current.id.replace("section-", ""))
+    })
 
     document.querySelectorAll(".sidebar-item").forEach(btn => {
       btn.addEventListener("click", () => {
-        const name = btn.dataset.section.replace(/\s+/g, "_")
-        location.hash = name
-        activateSection(name)
+        navigateTo(btn.dataset.section.replace(/\s+/g, "_"))
       })
     })
 
     const hash = location.hash.slice(1)
-    if (hash) activateSection(hash)
+    if (hash && sectionToCategory[hash]) {
+      navigateTo(hash)
+    } else {
+      activateCategory("general")
+      setActiveSidebarItem("general")
+    }
 
     const languages = document.getElementById("language")
     for (const [k, v] of Object.entries(availableLanguages({hideDefault: true}))) {
@@ -474,6 +562,7 @@ if (document.getElementById("settings-notification")) {
 // This part loads only on window.html
 if (document.getElementById("window-notepad-text")) {
   chrome.storage.local.get({ notepadInWindow: false, notepadContent: "", language: "" }, (items) => {
+    applyTranslations(items.language)
     if (!items.notepadInWindow) return
     const section = document.getElementById("window-notepad-section")
     const text = document.getElementById("window-notepad-text")

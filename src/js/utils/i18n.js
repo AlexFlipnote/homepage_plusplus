@@ -29,6 +29,11 @@ export function translate(lang, key, args = {}) {
     translation = translation.replace(regex, args[placeholder])
   })
 
+  // Replace remaining {key} references with other translation values
+  translation = translation.replace(/\{([^}]+)\}/g, (match, refKey) => {
+    return language[refKey] || translations[DEFAULT_LANG][refKey] || match
+  })
+
   return translation
 }
 

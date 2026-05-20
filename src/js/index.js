@@ -1,9 +1,8 @@
-import { isFirefox, isExtension } from "./utils/browser"
+import { isFirefox, isExtension, version } from "./utils/browser"
 import { extensionSettings } from "./options.js"
 import { getWeather } from "./utils/weather.js"
-import { HexClock, Clock } from "./utils/timeManager.js"
+import { HexClock, Clock, TumblerClock, AnalogClock, CLOCK_STYLE } from "./utils/timeManager.js"
 import { availableLanguages, setLocale, translate, getLocale } from "./utils/i18n.js"
-import * as manifest from "../manifest.json"
 
 const DEFAULT = {
   backgroundImagesCount: 31
@@ -63,7 +62,14 @@ function createBookmark(
 
 if (isExtension) {
   // Extension mode
-  console.log(`☑️ Running in extension mode (v${manifest.version})`)
+  console.log(`☑️ Running in extension mode (v${version})`)
+
+  const runtimeOnlyKeys = ["notepadContent", "notepadOpen", "notepadWidth", "notepadHeight"]
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== "local") return
+    const hasSettingChange = Object.keys(changes).some(k => k in extensionSettings && !runtimeOnlyKeys.includes(k))
+    if (hasSettingChange) location.reload()
+  })
 
   document.getElementById("search-form").onsubmit = (e) => {
     e.preventDefault()
@@ -82,8 +88,14 @@ if (isExtension) {
     const defaultTime = translate(items.language, "time.format.default")
     const defaultDate = translate(items.language, "date.format.default")
 
+    const clockStyleMap = {
+      [CLOCK_STYLE.TUMBLER]: TumblerClock,
+      [CLOCK_STYLE.SWISS]: AnalogClock
+    }
+    const TimeClock = clockStyleMap[items.clock_style] ?? Clock
+
     if (items.show_time) {
-      new Clock("time", items.fmt_time || defaultTime).start()
+      new TimeClock("time", items.fmt_time || defaultTime).start()
     }
 
     if (items.show_date) {

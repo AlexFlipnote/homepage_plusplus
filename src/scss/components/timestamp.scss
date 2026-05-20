@@ -11,10 +11,142 @@
 
   #time, #date {
     text-shadow: 0 0 .5rem #000;
-    font-size: 10vmin;
+    font-size: 5rem;
     font-variant-numeric: tabular-nums;
     margin: 0;
     transition: all .5s ease;
     line-height: 100%;
   }
+}
+
+.analog-clock {
+  backdrop-filter: var(--blur-normal);
+  background: var(--highlight-alpha);
+  border-radius: 50%;
+  box-shadow: var(--box-shadow);
+  font-size: 0;
+  height: 9rem;
+  letter-spacing: 0;
+  overflow: hidden;
+  position: relative;
+  text-shadow: none;
+  width: 9rem;
+}
+
+// Tick marks, positioned so their base rotates around the clock centre
+.clock-mark {
+  background: rgba(255, 255, 255, 0.35);
+  bottom: calc(50% + 3.75rem);
+  height: 0.5rem;
+  left: calc(50% - 1px);
+  position: absolute;
+  transform-origin: 50% calc(100% + 3.75rem);
+  width: 2px;
+}
+
+.clock-mark--hour {
+  background: var(--font-primary);
+  bottom: calc(50% + 3.25rem);
+  height: 1rem;
+  left: calc(50% - 2px);
+  transform-origin: 50% calc(100% + 3.25rem);
+  width: 4px;
+}
+
+.hand {
+  bottom: 50%;
+  position: absolute;
+  transform-origin: 50% 100%;
+  z-index: 1;
+}
+
+.hand--hour {
+  background: var(--font-primary);
+  height: 30%;
+  left: calc(50% - 0.25rem);
+  width: 0.5rem;
+
+  &::after {
+    background: var(--font-primary);
+    content: '';
+    height: 30%;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 100%;
+  }
+}
+
+.hand--minute {
+  background: var(--font-primary);
+  height: 44%;
+  left: calc(50% - 0.175rem);
+  width: 0.35rem;
+
+  &::after {
+    background: var(--font-primary);
+    content: '';
+    height: 20%;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 100%;
+  }
+}
+
+.hand--second {
+  background: #f00;
+  height: 35%;
+  left: calc(50% - 0.05rem);
+  width: 0.1rem;
+  z-index: 2;
+
+  // Red dot at the tip (far end toward 12)
+  &::before {
+    background: #f00;
+    border-radius: 50%;
+    content: '';
+    height: 0.8rem;
+    left: 50%;
+    position: absolute;
+    top: 0;
+    transform: translate(-50%, -50%);
+    width: 0.8rem;
+  }
+
+  // Short square counterbalance toward 6 o'clock
+  &::after {
+    background: #cc0000;
+    content: '';
+    height: 25%;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 100%;
+  }
+}
+
+.clock-slot {
+  display: inline-block;
+  height: 1em;
+  line-height: 1em;
+  position: relative;
+}
+
+.clock-char {
+  display: block;
+  line-height: 1;
+  z-index: -1;
+}
+
+.clock-char--exit {
+  animation: clock-char-exit 0.35s ease forwards;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.clock-char--enter {
+  animation: clock-char-enter 0.35s ease forwards;
 }
