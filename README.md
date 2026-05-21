@@ -1,5 +1,5 @@
 # Homepage++
-A web browser extension that allows you to customize your new tab/homepage with themes, weather and more. I made this many years ago when I was still learning web development, since many people still loved it back in the days when it was first released.
+A web browser extension that allows you to customize your new tab/homepage with fonts, colours, weather and more. I made this many years ago when I was still learning web development, since many people still loved it back in the days when it was first released.
 
 Goal is to make it as lightweight as possible, meaning no unnecessary bloat or dependency. Just a simple and clean homepage, made to be using most of the vanilla web technologies.
 

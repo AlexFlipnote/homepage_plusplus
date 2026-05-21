@@ -416,6 +416,8 @@ if (isExtension) {
   console.log("ℹ️ Running in demo mode")
   // Demo mode
 
+  document.title = "Homepage++ [ Demo ]"
+
   function updateDemoLabels(lang) {
     document.querySelectorAll("#demo-panel [data-translate]").forEach(el => {
       el.textContent = translate(lang, el.dataset.translate)
