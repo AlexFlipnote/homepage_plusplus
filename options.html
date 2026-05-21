@@ -33,6 +33,7 @@
         <span class="sidebar-category" data-translate="settings.nav.category.advanced"></span>
         <button class="sidebar-item" data-section="customcss" data-category="advanced" data-translate="settings.nav.section.customcss"></button>
         <button class="sidebar-item" data-section="backup" data-category="advanced" data-translate="settings.nav.section.backup"></button>
+        <button class="sidebar-item" data-section="translations" data-category="advanced" data-translate="settings.nav.section.translations"></button>
 
         <div class="sidebar-footer">
           <a href="https://discord.gg/yqb7vATbjH" title="Discord">
@@ -114,6 +115,14 @@
                 <option value="1">Tumbler</option>
                 <option value="2">Swiss</option>
               </select>
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row">
+              <div class="setting-label">
+                <span data-translate="settings.timestamp.clock_jumbo.title"></span>
+                <span class="setting-desc" data-translate="settings.timestamp.clock_jumbo.desc"></span>
+              </div>
+              <input type="checkbox" id="clock_jumbo">
             </div>
             <div class="setting-divider"></div>
             <div class="setting-row setting-row--column">
@@ -394,6 +403,13 @@
               <input type="file" id="import-settings-input" accept=".json" style="display: none">
             </div>
           </div>
+        </section>
+
+        <!-- Translations -->
+        <section class="settings-section" id="section-translations">
+          <h2 class="section-title" data-translate="settings.translations.title"></h2>
+          <p class="section-desc" data-translate="settings.translations.desc"></p>
+          <div id="translation-coverage-list" class="setting-group"></div>
         </section>
 
       </main>
