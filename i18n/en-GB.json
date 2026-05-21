@@ -166,7 +166,7 @@
   "settings.hexbg.enable.desc": "This will replace custom background",
   "settings.weather.title": "Weather",
   "settings.weather.desc": "Powered by {url:met_norway}.",
-  "settings.weather.enable.title": "Enable weather",
+  "settings.weather.enable.title": "Show weather",
   "settings.weather.hourly.title": "Show hourly forecast",
   "settings.weather.daily_days.title": "Days of daily forecast",
   "settings.weather.daily_days.desc": "Set to 0 to disable",

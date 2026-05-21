@@ -166,7 +166,7 @@
   "settings.hexbg.enable.desc": "Esto reemplazará el fondo personalizado",
   "settings.weather.title": "El tiempo",
   "settings.weather.desc": "Proporcionado por {url:met_norway}.",
-  "settings.weather.enable.title": "Activar clima",
+  "settings.weather.enable.title": "Mostrar clima",
   "settings.weather.hourly.title": "Mostrar pronóstico por horas",
   "settings.weather.daily_days.title": "Días de pronóstico diario",
   "settings.weather.daily_days.desc": "Establecer en 0 para desactivar",

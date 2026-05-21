@@ -166,7 +166,7 @@
   "settings.hexbg.enable.desc": "Dette vil erstatte egendefinert bakgrunn",
   "settings.weather.title": "Vær",
   "settings.weather.desc": "Levert av {url:met_norway}.",
-  "settings.weather.enable.title": "Aktiver vær",
+  "settings.weather.enable.title": "Vis vær",
   "settings.weather.hourly.title": "Vis timesvarsel",
   "settings.weather.daily_days.title": "Dager med daglig varsel",
   "settings.weather.daily_days.desc": "Sett til 0 for å deaktivere",
