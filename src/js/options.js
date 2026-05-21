@@ -6,6 +6,7 @@ import { HexClock } from "./utils/timeManager.js"
 import { availableLanguages, translate, translationCoverage } from "./utils/i18n.js"
 
 const defaultColour = "#ffffff"
+const defaultColourBlurBg = "#181818"
 
 export const extensionSettings = {
   language: "",
@@ -153,9 +154,9 @@ function saveOptions(message, css="") {
     return bookmarks
   }
 
-  function saveColour(elName) {
+  function saveColour(elName, defaultValue = defaultColour) {
     const el = document.getElementById(elName)
-    if (el && el.value === defaultColour) {
+    if (el && el.value === defaultValue) {
       return null
     }
     return el ? el.value : null
@@ -199,7 +200,7 @@ function saveOptions(message, css="") {
     colour_bookmarks: saveColour("colour_bookmarks"),
     colour_placeholder: saveColour("colour_placeholder"),
     colour_input: saveColour("colour_input"),
-    colour_blurbg: (() => { const el = document.getElementById("colour_blurbg"); return (el && el.value && el.value !== "#181818") ? el.value : null })(),
+    colour_blurbg: saveColour("colour_blurbg", defaultColourBlurBg),
     uiScale: parseFloat(document.getElementById("uiScale").value) || 1.0,
     blurAmountUi: parseInt(document.getElementById("blurAmountUi").value) ?? 3,
     blurAmountBg: parseInt(document.getElementById("blurAmountBg").value) ?? 3
@@ -368,14 +369,14 @@ function restoreOptions() {
     uiScale.oninput = () => { if (uiScaleLabel) uiScaleLabel.textContent = parseFloat(uiScale.value).toFixed(1) }
     uiScale.onchange = () => { saveOptions(`UI scale set: ${uiScale.value}`, "change") }
 
-    function initColourWidget(id, savedValue, label) {
+    function initColourWidget(id, savedValue, label, defaultValue = defaultColour) {
       const native = document.getElementById(id)
       const widget = native.closest(".colour-picker-widget")
       const swatch = widget.querySelector(".colour-swatch")
       const hexInput = widget.querySelector(".colour-hex-input")
 
       function applyValue(hex) {
-        const colour = hex || defaultColour
+        const colour = hex || defaultValue
         native.value = colour
         hexInput.value = colour
         hexInput.classList.remove("invalid")
@@ -432,7 +433,7 @@ function restoreOptions() {
     const colourBookmarks = initColourWidget("colour_bookmarks", items.colour_bookmarks, "Bookmarks colour")
     const colourPlaceholder = initColourWidget("colour_placeholder", items.colour_placeholder, "Placeholder text colour")
     const colourInput = initColourWidget("colour_input", items.colour_input, "Written text colour")
-    const colourBlurbg = initColourWidget("colour_blurbg", items.colour_blurbg || "#181818", "Blur background colour")
+    const colourBlurbg = initColourWidget("colour_blurbg", items.colour_blurbg, "Blur background colour", defaultColourBlurBg)
 
     const colourResetAll = document.getElementById("reset_colours_all")
     colourResetAll.onclick = () => {
@@ -444,7 +445,7 @@ function restoreOptions() {
       colourBookmarks.setValue(null)
       colourPlaceholder.setValue(null)
       colourInput.setValue(null)
-      colourBlurbg.setValue("#181818")
+      colourBlurbg.setValue(defaultColourBlurBg)
       saveOptions("All colours reset to default", "change")
     }
 
