@@ -4,7 +4,7 @@
   "name": "Homepage++",
   "description": "A web browser extension that allows you to customize your new tab/homepage with fonts, colours, weather and more.",
   "homepage_url": "https://alexflipnote.dev/homepage_plusplus/",
-  "version": "2.6.5",
+  "version": "2.6.6",
 
   "chrome_url_overrides": {
     "newtab": "index.html"
