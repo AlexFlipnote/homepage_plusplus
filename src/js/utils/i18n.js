@@ -50,3 +50,26 @@ export function availableLanguages({ hideDefault = false } = {}) {
   }
   return langs
 }
+
+/**
+ * Calculate translation coverage for each non-default language vs en-GB
+ * @returns {Object} Map of lang code -> { name, coverage (0-100) }
+ */
+export function translationCoverage() {
+  const defaultKeys = Object.keys(translations[DEFAULT_LANG])
+  const total = defaultKeys.length
+  const result = {}
+
+  for (const code in translations) {
+    const lang = translations[code]
+    const covered = code === DEFAULT_LANG
+      ? total
+      : defaultKeys.filter(k => k in lang && lang[k] !== "").length
+    result[code] = {
+      name: lang["language.name"] || code,
+      coverage: Math.round((covered / total) * 100)
+    }
+  }
+
+  return result
+}

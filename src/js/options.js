@@ -3,7 +3,7 @@ import Sortable from "sortablejs"
 import { isFirefox, version } from "./utils/browser.js"
 import { WorldMap } from "./utils/openstreetmap.js"
 import { HexClock } from "./utils/timeManager.js"
-import { availableLanguages, translate } from "./utils/i18n.js"
+import { availableLanguages, translate, translationCoverage } from "./utils/i18n.js"
 
 export const extensionSettings = {
   language: "",
@@ -36,12 +36,14 @@ export const extensionSettings = {
   notepadContent: "",
   notepadWidth: 300,
   notepadHeight: 220,
-  clock_style: 0
+  clock_style: 0,
+  clock_jumbo: false
 }
 
 const URLS = {
   google_fonts: { href: "https://fonts.google.com/", label: "Google Fonts" },
-  met_norway: { href: "https://api.met.no/", label: "MET Norway" }
+  met_norway: { href: "https://api.met.no/", label: "MET Norway" },
+  i18n: { href: "https://github.com/AlexFlipnote/homepage_plusplus/tree/master/i18n", label: "i18n folder" }
 }
 
 function applyTranslations(lang) {
@@ -163,7 +165,8 @@ function saveOptions(message, css="") {
     bookmarks: fetchBookmarkInputs(),
     notepadEnabled: document.getElementById("notepadEnabled").checked,
     notepadInWindow: document.getElementById("notepadInWindow").checked,
-    clock_style: parseInt(document.getElementById("clock_style").value)
+    clock_style: parseInt(document.getElementById("clock_style").value),
+    clock_jumbo: document.getElementById("clock_jumbo").checked
   }, () => {
     createAlert(message, css)
   })
@@ -251,6 +254,10 @@ function restoreOptions() {
     const clockStyle = document.getElementById("clock_style")
     clockStyle.value = items.clock_style
     clockStyle.onchange = () => { saveOptions(`Clock style set: ${clockStyle.value}`, "change") }
+
+    const clockJumbo = document.getElementById("clock_jumbo")
+    clockJumbo.checked = items.clock_jumbo
+    clockJumbo.onchange = () => { saveOptions(`Jumbo clock set: ${clockJumbo.checked}`, clockJumbo.checked ? "add" : "remove") }
 
     const customfont = document.getElementById("customfont")
     customfont.value = items.customfont
@@ -388,7 +395,7 @@ if (document.getElementById("settings-notification")) {
       general: ["general", "timestamp"],
       appearance: ["background", "font", "hexbg"],
       features: ["weather", "bookmarks", "notepad"],
-      advanced: ["customcss", "backup"]
+      advanced: ["customcss", "backup", "translations"]
     }
 
     const sectionToCategory = {}
@@ -468,6 +475,43 @@ if (document.getElementById("settings-notification")) {
       option.value = k
       languages.appendChild(option)
     }
+
+    const coverageList = document.getElementById("translation-coverage-list")
+    const coverage = translationCoverage()
+    const sorted = Object.entries(coverage).sort((a, b) => b[1].coverage - a[1].coverage)
+    sorted.forEach(([code, { name, coverage: pct }], i) => {
+      if (i > 0) {
+        const divider = document.createElement("div")
+        divider.className = "setting-divider"
+        coverageList.appendChild(divider)
+      }
+      const row = document.createElement("div")
+      row.className = "setting-row translation-coverage-row"
+
+      const label = document.createElement("span")
+      label.className = "translation-lang-name"
+      label.textContent = `${name} (${code})`
+
+      const barWrap = document.createElement("div")
+      barWrap.className = "translation-bar-wrap"
+
+      const bar = document.createElement("div")
+      bar.className = "translation-bar"
+      bar.style.width = `${pct}%`
+      if (pct === 100) bar.classList.add("translation-bar--full")
+      else if (pct >= 75) bar.classList.add("translation-bar--good")
+      else bar.classList.add("translation-bar--low")
+
+      const pctLabel = document.createElement("span")
+      pctLabel.className = "translation-pct"
+      pctLabel.textContent = `${pct}%`
+
+      barWrap.appendChild(bar)
+      row.appendChild(label)
+      row.appendChild(barWrap)
+      row.appendChild(pctLabel)
+      coverageList.appendChild(row)
+    })
 
     // Show live demo
     new HexClock(document.getElementById("hexbgdemobg"), {background:true}).start()

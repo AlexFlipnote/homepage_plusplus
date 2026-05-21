@@ -101,56 +101,77 @@
     <!-- Settings -->
     <a id="settings" href="./options.html" target="_blank" style="display: none"></a>
 
-    <!-- Demo Buttons -->
-    <section id="demo-buttons" style="display: none;">
-      <h2 class="no-margin text-center">Demo settings</h2>
-      <label class="default">
-        Change language
+    <!-- Demo Panel -->
+    <aside id="demo-panel" style="display: none;">
+      <button class="demo-panel-close" aria-label="Close demo settings">✕</button>
+      <h2 data-translate="settings.nav.section.timestamp"></h2>
+      <label>
+        <span data-translate="settings.timestamp.clock_style.title"></span>
+        <select id="clockStyle">
+          <option value="digital">Digital</option>
+          <option value="tumbler">Tumbler</option>
+          <option value="analog">Analog (Swiss)</option>
+          <option value="hex">Hex color</option>
+        </select>
+      </label>
+      <label class="default" id="clockFormatLabel">
+        <span data-translate="settings.timestamp.time_format.title"></span>
+        <input type="text" id="changeClock" placeholder="%H:%M:%S">
+      </label>
+      <label>
+        <span data-translate="settings.timestamp.date_format.title"></span>
+        <input type="text" id="changeDate" placeholder="%e. %B %Y">
+      </label>
+      <label>
+        <input type="checkbox" id="jumboToggle">
+        <span data-translate="settings.timestamp.clock_jumbo.title"></span>
+      </label>
+      <label>
+        <input type="checkbox" id="timeToggle" checked>
+        <span data-translate="settings.general.show_time.title"></span>
+      </label>
+      <label>
+        <input type="checkbox" id="dateToggle" checked>
+        <span data-translate="settings.general.show_date.title"></span>
+      </label>
+
+      <h2 data-translate="settings.nav.category.appearance"></h2>
+      <label>
+        <span data-translate="settings.general.language.title"></span>
         <select id="language">
           <option value="">Default: English (United Kingdom)</option>
         </select>
       </label>
-      <label class="default">
-        Change background
+      <label>
+        <span data-translate="settings.background.url.title"></span>
         <input type="text" id="changebg" placeholder="https://">
       </label>
-      <label class="default">
-        Change font
+      <label>
+        <span data-translate="settings.font.font_name.title"></span>
         <input type="text" id="changefont" placeholder="Times New Roman">
       </label>
-      <label class="default">
-        Change clock format
-        <input type="text" id="changeClock" placeholder="%H:%M:%S">
-      </label>
-      <label class="default">
-        Change date format
-        <input type="text" id="changeDate" placeholder="%e. %B %Y">
-      </label>
-      <label class="default">
-        <input type="checkbox" id="timeToggle" checked>
-        Toggle time
-      </label>
-      <label class="default">
-        <input type="checkbox" id="dateToggle" checked>
-        Toggle date
-      </label>
-      <label class="default">
+
+      <h2 data-translate="settings.nav.category.features"></h2>
+      <label>
         <input type="checkbox" id="searchToggle">
-        Toggle search bar
+        <span data-translate="settings.general.searchbar.title"></span>
       </label>
-      <label class="default">
+      <label>
         <input type="checkbox" id="weather">
-        Toggle weather
+        <span data-translate="settings.weather.enable.title"></span>
       </label>
-      <label class="default">
+      <label>
         <input type="checkbox" id="bookmarksToggle">
-        Toggle bookmarks
+        <span data-translate="settings.bookmarks.title"></span>
       </label>
-      <label class="default">
+      <label>
         <input type="checkbox" id="notepadToggle">
-        Toggle notepad
+        <span data-translate="settings.notepad.enable.title"></span>
       </label>
-    </section>
+    </aside>
+
+    <!-- Demo Panel Toggle -->
+    <button id="demo-panel-toggle" style="display: none;" aria-label="Demo settings"></button>
 
     <!-- Demo: Install button -->
     <a id="install-button" target="_blank" style="display: none;">

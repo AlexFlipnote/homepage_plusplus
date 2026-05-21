@@ -756,6 +756,45 @@ body:has(#window-notepad-section) .box-container { margin-bottom: 0; }
   .message { pointer-events: none; }
 }
 
+.translation-coverage-row {
+  gap: 1rem;
+
+  .translation-lang-name {
+    color: var(--font-primary);
+    flex-shrink: 0;
+    font-size: .9rem;
+    font-weight: 600;
+    min-width: 14rem;
+  }
+
+  .translation-bar-wrap {
+    background-color: rgba(255, 255, 255, .08);
+    border-radius: 3rem;
+    flex: 1;
+    height: .4rem;
+    overflow: hidden;
+  }
+
+  .translation-bar {
+    border-radius: 3rem;
+    height: 100%;
+    transition: width .4s ease;
+
+    &--full  { background-color: var(--success); }
+    &--good  { background-color: var(--warning); }
+    &--low   { background-color: var(--error); }
+  }
+
+  .translation-pct {
+    color: rgba(255, 255, 255, .55);
+    flex-shrink: 0;
+    font-size: .85rem;
+    font-weight: 600;
+    min-width: 2.5rem;
+    text-align: right;
+  }
+}
+
 .bookmark-container {
   align-items: center;
   display: flex;

@@ -1,55 +1,118 @@
-@keyframes demo-bar-bounce {
-  from { right: 0; }
-  20%, 40% { right: -.5rem; }
-  50% { right: 0rem; }
-  60% { right: -.25rem; }
-  70% { right: 0; }
-  80% { right: -.1rem; }
-  90%, 100% { right: 0; }
-}
+$gear-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M15.95 10.78c.03-.25.05-.51.05-.78s-.02-.53-.06-.78l1.69-1.32c.15-.12.19-.34.1-.51l-1.6-2.77c-.1-.18-.31-.24-.49-.18l-1.99.8c-.42-.32-.86-.58-1.35-.78L12 2.34c-.03-.2-.2-.34-.4-.34H8.4c-.2 0-.36.14-.39.34l-.3 2.12c-.49.2-.94.47-1.35.78l-1.99-.8c-.18-.07-.39 0-.49.18l-1.6 2.77c-.1.18-.06.39.1.51l1.69 1.32c-.04.25-.07.52-.07.78s.02.53.06.78L2.37 12.1c-.15.12-.19.34-.1.51l1.6 2.77c.1.18.31.24.49.18l1.99-.8c.42.32.86.58 1.35.78l.3 2.12c.04.2.2.34.4.34h3.2c.2 0 .37-.14.39-.34l.3-2.12c.49-.2.94-.47 1.35-.78l1.99.8c.18.07.39 0 .49-.18l1.6-2.77c.1-.18.06-.39-.1-.51l-1.67-1.32zM10 13c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3z'/%3E%3C/svg%3E");
 
-#demo-buttons {
+#demo-panel {
   backdrop-filter: var(--blur-normal);
-  background-color: var(--highlight-alpha);
-  border-radius: 0 1rem 1rem 0;
-  bottom: 1.5rem;
+  background-color: rgba(20, 20, 20, .85);
+  border-left: 1px solid rgba(255, 255, 255, .08);
+  bottom: 0;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  padding: 1rem 3rem 1rem 2rem;
-  position: absolute;
-  transform: translateX(-27rem);
-  transition: transform .3s ease-in-out, padding .3s ease-in-out;
+  gap: .1rem;
+  overflow-y: auto;
+  padding: 1.5rem 1.25rem 5rem;
+  position: fixed;
+  right: 0;
+  top: 0;
+  transform: translateX(100%);
+  transition: transform .3s ease-in-out;
+  width: 33vw;
+  min-width: 280px;
+  z-index: 99999999999;
+
+  &::-webkit-scrollbar { width: .35rem; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, .15);
+    border-radius: 3rem;
+    &:hover { background-color: rgba(255, 255, 255, .3); }
+  }
+
+  &.open { transform: translateX(0); }
+
+  .demo-panel-close {
+    background: transparent;
+    border-radius: .5rem;
+    color: var(--font-secondary);
+    cursor: pointer;
+    font-size: 1.25rem;
+    line-height: 1;
+    padding: .25rem .5rem;
+    position: absolute;
+    right: .75rem;
+    top: .75rem;
+    transition: color .2s ease, background-color .2s ease;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, .08);
+      color: var(--font-primary);
+    }
+  }
+
+  h2 {
+    font-size: .7rem;
+    font-weight: bold;
+    letter-spacing: .1em;
+    margin: .5rem 0 .75rem;
+    opacity: .5;
+    text-transform: uppercase;
+  }
 
   label {
+    background: transparent;
+    font-weight: normal;
     margin: .1rem 0;
     padding: 0;
-    background: transparent;
-  }
 
-  &:hover {
-    transform: translateX(0);
-    padding-right: 1rem;
+    span[data-translate]:first-child {
+      flex-shrink: 0;
+      width: 7.5rem;
+    }
 
-    &:after { opacity: 0; }
-  }
-
-  &:after {
-    animation: demo-bar-bounce 2s infinite;
-    animation-delay: 2s;
-    animation-iteration-count: 2;
-    background-color: var(--grey);
-    border-radius: .25rem;
-    width: .5rem;
-    height: 4rem;
-    position: absolute;
-    content: "";
-    right: 0;
-    top: 50%;
-    transform: translate(50%, -50%);
-    transition: opacity .3s ease-in-out;
+    input:not([type="checkbox"]), select {
+      box-sizing: border-box;
+      flex: 1;
+      min-width: 0;
+      width: 0;
+    }
   }
 }
 
+#demo-panel-toggle {
+  backdrop-filter: var(--blur-normal);
+  background-color: var(--highlight-alpha);
+  border-radius: 1rem;
+  bottom: 1.5rem;
+  height: 3rem;
+  position: fixed;
+  right: 1.5rem;
+  transition: opacity .3s ease-in-out, background-color .3s ease, box-shadow .3s ease;
+  width: 3rem;
+  z-index: 10000;
+
+  &::before {
+    background-color: var(--font-primary);
+    content: "";
+    inset: 0;
+    -webkit-mask-image: $gear-icon;
+    mask-image: $gear-icon;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: 1.5rem 1.5rem;
+    mask-size: 1.5rem 1.5rem;
+    position: absolute;
+    transition: background-color .3s ease, transform .3s ease;
+  }
+
+  &:hover::before {
+    background-color: var(--font-secondary);
+    transform: rotate(60deg);
+  }
+
+  &.panel-open { opacity: 0; pointer-events: none; }
+}
 
 #install-button {
   backdrop-filter: var(--blur-normal);
@@ -58,9 +121,9 @@
   bottom: 1.5rem;
   color: var(--font-primary);
   cursor: pointer;
+  left: 1.5rem;
   padding: .5rem 1rem;
-  position: absolute;
-  right: 1.5rem;
+  position: fixed;
   text-decoration: none;
   transition: background-color .3s ease, transform .3s ease, color .3s ease, box-shadow .3s ease;
 

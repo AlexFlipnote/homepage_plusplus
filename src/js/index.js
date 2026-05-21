@@ -94,6 +94,10 @@ if (isExtension) {
     }
     const TimeClock = clockStyleMap[items.clock_style] ?? Clock
 
+    if (items.clock_jumbo) {
+      document.querySelector(".time-container")?.classList.add("jumbo")
+    }
+
     if (items.show_time) {
       new TimeClock("time", items.fmt_time || defaultTime).start()
     }
@@ -342,12 +346,20 @@ if (isExtension) {
   document.body.classList.add("no-animations")
   // Demo mode
 
+  function updateDemoLabels(lang) {
+    document.querySelectorAll("#demo-panel [data-translate]").forEach(el => {
+      el.textContent = translate(lang, el.dataset.translate)
+    })
+  }
+
+  updateDemoLabels(undefined)
+
   const wname = document.getElementById("wname")
   const wdescription = document.getElementById("wdescription")
   wname.textContent = translate(undefined, "demo.weather.location")
   wdescription.textContent = translate(undefined, "demo.weather.condition")
 
-  const timeClock = new Clock("time", translate(undefined, "time.format.default"))
+  let timeClock = new Clock("time", translate(undefined, "time.format.default"))
   timeClock.start()
 
   const dateClock = new Clock("date", translate(undefined, "date.format.default"))
@@ -370,7 +382,69 @@ if (isExtension) {
     }
   }
 
-  turnSwitch(document.getElementById("demo-buttons"), "flex")
+  const clockFormatLabel = document.getElementById("clockFormatLabel")
+
+  function switchClockStyle(style) {
+    timeClock.stop()
+    const timeEl = document.getElementById("time")
+    timeEl.style.color = ""
+
+    const fmt = document.getElementById("changeClock").value || translate(getLocale(), "time.format.default")
+
+    switch (style) {
+    case "tumbler":
+      timeClock = new TumblerClock("time", fmt)
+      clockFormatLabel.style.display = ""
+      break
+    case "analog":
+      timeClock = new AnalogClock("time")
+      clockFormatLabel.style.display = "none"
+      break
+    case "hex":
+      timeClock = new HexClock("time", { color: true, text: true })
+      clockFormatLabel.style.display = "none"
+      break
+    default:
+      timeClock = new Clock("time", fmt)
+      clockFormatLabel.style.display = ""
+    }
+
+    timeClock.start()
+  }
+
+  document.getElementById("clockStyle").onchange = (e) => {
+    switchClockStyle(e.target.value)
+  }
+
+  document.getElementById("jumboToggle").onclick = function() {
+    document.querySelector(".time-container").classList.toggle("jumbo", this.checked)
+  }
+
+  document.getElementById("demo-panel").style.display = "flex"
+
+  const demoPanelToggle = document.getElementById("demo-panel-toggle")
+  demoPanelToggle.style.display = ""
+  const demoPanel = document.getElementById("demo-panel")
+
+  function openDemoPanel() {
+    demoPanel.classList.add("open")
+    demoPanelToggle.classList.add("panel-open")
+  }
+
+  function closeDemoPanel() {
+    demoPanel.classList.remove("open")
+    demoPanelToggle.classList.remove("panel-open")
+  }
+
+  demoPanelToggle.onclick = openDemoPanel
+
+  demoPanel.querySelector(".demo-panel-close").onclick = closeDemoPanel
+
+  document.addEventListener("click", (e) => {
+    if (demoPanel.classList.contains("open") && !demoPanel.contains(e.target) && e.target !== demoPanelToggle) {
+      closeDemoPanel()
+    }
+  })
 
   document.addEventListener("DOMContentLoaded", function() {
     const backgroundElement = document.getElementById("background")
@@ -516,12 +590,9 @@ if (isExtension) {
 
   // Change clock format
   document.getElementById("changeClock").oninput = (el) => {
+    if (!timeClock.changeFormat) return
     const format = el.target.value
-    if (format) {
-      timeClock.changeFormat(format)
-    } else {
-      timeClock.changeFormat(translate(getLocale(), "time.format.default"))
-    }
+    timeClock.changeFormat(format || translate(getLocale(), "time.format.default"))
   }
 
   // Change date format
@@ -564,7 +635,8 @@ if (isExtension) {
     if (!getLangVal) { getLangVal = navigator.language }
 
     setLocale(getLangVal)
-    timeClock.changeFormat(translate(getLangVal, "time.format.default"))
+    updateDemoLabels(getLangVal)
+    if (timeClock.changeFormat) timeClock.changeFormat(translate(getLangVal, "time.format.default"))
     dateClock.changeFormat(translate(getLangVal, "date.format.default"))
 
     const searchInput = document.getElementById("search-input")

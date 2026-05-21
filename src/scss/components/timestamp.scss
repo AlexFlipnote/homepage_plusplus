@@ -150,3 +150,49 @@
 .clock-char--enter {
   animation: clock-char-enter 0.35s ease forwards;
 }
+
+// Jumbo size for the clock and text on the home page
+.time-container.jumbo {
+  #time { font-size: 7.5rem; }
+
+  .analog-clock {
+    height: 13.5rem;
+    width: 13.5rem;
+  }
+
+  .clock-mark {
+    bottom: calc(50% + 5.625rem);
+    height: 0.75rem;
+    left: calc(50% - 1.5px);
+    transform-origin: 50% calc(100% + 5.625rem);
+    width: 3px;
+  }
+
+  .clock-mark--hour {
+    bottom: calc(50% + 4.875rem);
+    height: 1.5rem;
+    left: calc(50% - 3px);
+    transform-origin: 50% calc(100% + 4.875rem);
+    width: 6px;
+  }
+
+  .hand--hour {
+    left: calc(50% - 0.375rem);
+    width: 0.75rem;
+  }
+
+  .hand--minute {
+    left: calc(50% - 0.2625rem);
+    width: 0.525rem;
+  }
+
+  .hand--second {
+    left: calc(50% - 0.075rem);
+    width: 0.15rem;
+
+    &::before {
+      height: 1.2rem;
+      width: 1.2rem;
+    }
+  }
+}

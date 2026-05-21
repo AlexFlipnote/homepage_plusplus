@@ -2,8 +2,8 @@ export const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(
 export const isFirefox = typeof InstallTrigger !== "undefined"
 export const isExtension = /^(?:chrome|moz)-extension:$/.test(location.protocol)
 
-const browserAPI = typeof browser !== "undefined" ? browser : chrome
-export const version = browserAPI.runtime.getManifest().version
+const browserAPI = typeof browser !== "undefined" ? browser : (typeof chrome !== "undefined" ? chrome : null)
+export const version = browserAPI?.runtime?.getManifest()?.version ?? null
 
 /**
  * Get the browser name
