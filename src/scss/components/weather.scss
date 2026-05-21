@@ -1,7 +1,7 @@
 #weather-container {
   animation: enter-left 1s ease-in-out;
-  backdrop-filter: var(--blur-normal);
-  background-color: var(--highlight-alpha);
+  backdrop-filter: var(--blur-amount-ui);
+  background-color: var(--blur-background);
   border-radius: 1rem;
   display: flex;
   flex-direction: column;
@@ -10,6 +10,8 @@
   padding: .6rem 1.2rem;
   position: absolute;
   top: 1.5rem;
+  transform: scale(var(--ui-scale));
+  transform-origin: top left;
   user-select: none;
 
   .current {

@@ -13,20 +13,22 @@ $notepad-collapse-arm: 5; // arm length outward from each corner
 $notepad-collapse-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='#{$notepad-collapse-sw}' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='#{12 + $notepad-collapse-gap} #{12 - $notepad-collapse-gap - $notepad-collapse-arm} #{12 + $notepad-collapse-gap} #{12 - $notepad-collapse-gap} #{12 + $notepad-collapse-gap + $notepad-collapse-arm} #{12 - $notepad-collapse-gap}'/%3E%3Cpolyline points='#{12 - $notepad-collapse-gap} #{12 + $notepad-collapse-gap + $notepad-collapse-arm} #{12 - $notepad-collapse-gap} #{12 + $notepad-collapse-gap} #{12 - $notepad-collapse-gap - $notepad-collapse-arm} #{12 + $notepad-collapse-gap}'/%3E%3C/svg%3E");
 
 #notepad {
-  backdrop-filter: var(--blur-normal);
-  background-color: var(--highlight-alpha);
+  backdrop-filter: var(--blur-amount-ui);
+  background-color: var(--blur-background);
   border-radius: 1rem;
   cursor: pointer;
   height: $notepad-icon-size;
   position: absolute;
   right: 1.5rem;
   top: 1.5rem;
+  transform: scale(var(--ui-scale));
+  transform-origin: top right;
   transition: width .2s ease, height .2s ease;
   width: $notepad-icon-size;
   z-index: 99999999;
 
   &::before {
-    background-color: var(--font-primary);
+    background-color: var(--colour-icon);
     content: "";
     inset: 0;
     -webkit-mask-image: $notepad-pencil-icon;
@@ -44,7 +46,8 @@ $notepad-collapse-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
   &:hover::before {
     transform: rotate(-20deg);
-    background-color: var(--font-secondary);
+    background-color: var(--colour-icon);
+    opacity: .75;
   }
 
   .notepad-inner {
@@ -101,7 +104,7 @@ $notepad-collapse-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     fill: rgba(255, 255, 255, .6);
     border-radius: .25rem;
     border: none;
-    color: var(--font-secondary);
+    color: var(--colour-icon);
     cursor: pointer;
     flex-shrink: 0;
     height: 1.4rem;
@@ -129,7 +132,8 @@ $notepad-collapse-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     &:hover {
       background-color: rgba(255, 255, 255, .1);
       box-shadow: none;
-      color: var(--font-primary);
+      color: var(--colour-icon);
+      opacity: .75;
     }
 
     &:active {
@@ -143,7 +147,7 @@ $notepad-collapse-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     background: transparent;
     border: none;
     box-sizing: border-box;
-    color: var(--font-primary);
+    color: var(--colour-input);
     flex: 1;
     font-family: inherit;
     font-size: .9rem;
@@ -156,7 +160,7 @@ $notepad-collapse-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     &:hover, &:focus { box-shadow: none; }
 
-    &::placeholder { color: rgba(255, 255, 255, .3); }
+    &::placeholder { color: var(--colour-placeholder); }
 
     &::-webkit-scrollbar { width: .6rem; }
     &::-webkit-scrollbar-track { background: transparent; margin-block: .5rem; }
@@ -180,9 +184,9 @@ $notepad-collapse-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     width: 1.25rem;
 
     &::before {
-      border-bottom: .15rem solid rgba(255, 255, 255, .6);
+      border-bottom: .15rem solid var(--colour-icon);
       border-bottom-left-radius: .45rem;
-      border-left: .15rem solid rgba(255, 255, 255, .6);
+      border-left: .15rem solid var(--colour-icon);
       bottom: .4rem;
       content: "";
       height: .55rem;

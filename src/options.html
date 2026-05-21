@@ -22,8 +22,10 @@
 
         <span class="sidebar-category" data-translate="settings.nav.category.appearance"></span>
         <button class="sidebar-item" data-section="background" data-category="appearance" data-translate="settings.nav.section.background"></button>
+        <button class="sidebar-item" data-section="colours" data-category="general" data-translate="settings.nav.section.colours"></button>
         <button class="sidebar-item" data-section="font" data-category="appearance" data-translate="settings.nav.section.font"></button>
         <button class="sidebar-item" data-section="hexbg" data-category="appearance" data-translate="settings.nav.section.hexbg"></button>
+        <button class="sidebar-item" data-section="accessibility" data-category="general" data-translate="settings.nav.section.accessibility"></button>
 
         <span class="sidebar-category" data-translate="settings.nav.category.features"></span>
         <button class="sidebar-item" data-section="weather" data-category="features" data-translate="settings.nav.section.weather"></button>
@@ -196,6 +198,149 @@
           <div class="section-actions">
             <button id="custombg_prune" class="error-bg" data-translate="settings.background.delete_all"></button>
           </div>
+
+          <h3 class="subsection-title" data-translate="settings.background.blur.subtitle"></h3>
+          <div class="setting-group">
+            <div class="setting-row setting-row--column">
+              <div class="setting-label">
+                <span data-translate="settings.background.blur_amount_ui.title"></span>
+                <span class="setting-desc" data-translate="settings.background.blur_amount_ui.desc"></span>
+              </div>
+              <div class="slider-row">
+                <input type="range" id="blurAmountUi" min="0" max="6" step="1">
+                <span class="slider-value" id="blurAmountUi-label">3</span>
+              </div>
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row setting-row--column">
+              <div class="setting-label">
+                <span data-translate="settings.background.blur_amount_bg.title"></span>
+                <span class="setting-desc" data-translate="settings.background.blur_amount_bg.desc"></span>
+              </div>
+              <div class="slider-row">
+                <input type="range" id="blurAmountBg" min="0" max="6" step="1">
+                <span class="slider-value" id="blurAmountBg-label">3</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Colours -->
+        <section class="settings-section" id="section-colours">
+          <h2 class="section-title" data-translate="settings.colours.title"></h2>
+          <p class="section-desc" data-translate="settings.colours.desc"></p>
+
+          <h3 class="subsection-title" data-translate="settings.colours.subtitle.global"></h3>
+          <div class="setting-group">
+            <div class="colour-sub-grid colour-sub-grid--2col">
+              <div class="colour-sub-item">
+                <div class="setting-label">
+                  <span data-translate="settings.colours.global_colour.title"></span>
+                  <span class="setting-desc" data-translate="settings.colours.global_colour.desc"></span>
+                </div>
+                <div class="colour-picker-widget">
+                  <button class="colour-swatch" type="button"></button>
+                  <input type="text" class="colour-hex-input" maxlength="7" spellcheck="false">
+                  <input type="color" id="colour_global" class="colour-hidden">
+                </div>
+              </div>
+              <div class="colour-sub-item">
+                <div class="setting-label">
+                  <span data-translate="settings.colours.panel_colour.title"></span>
+                  <span class="setting-desc" data-translate="settings.colours.panel_colour.desc"></span>
+                </div>
+                <div class="colour-picker-widget">
+                  <button class="colour-swatch" type="button"></button>
+                  <input type="text" class="colour-hex-input" maxlength="7" spellcheck="false">
+                  <input type="color" id="colour_blurbg" class="colour-hidden">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <h3 class="subsection-title" data-translate="settings.colours.subtitle.overrides"></h3>
+          <div class="setting-group">
+            <div class="colour-sub-grid">
+              <div class="colour-sub-item">
+                <div class="setting-label">
+                  <span data-translate="settings.colours.icon_colour.title"></span>
+                  <span class="setting-desc" data-translate="settings.colours.icon_colour.desc"></span>
+                </div>
+                <div class="colour-picker-widget">
+                  <button class="colour-swatch" type="button"></button>
+                  <input type="text" class="colour-hex-input" maxlength="7" spellcheck="false">
+                  <input type="color" id="colour_icon" class="colour-hidden">
+                </div>
+              </div>
+              <div class="colour-sub-item">
+                <div class="setting-label">
+                  <span data-translate="settings.colours.time_colour.title"></span>
+                  <span class="setting-desc" data-translate="settings.colours.time_colour.desc"></span>
+                </div>
+                <div class="colour-picker-widget">
+                  <button class="colour-swatch" type="button"></button>
+                  <input type="text" class="colour-hex-input" maxlength="7" spellcheck="false">
+                  <input type="color" id="colour_time" class="colour-hidden">
+                </div>
+              </div>
+              <div class="colour-sub-item">
+                <div class="setting-label">
+                  <span data-translate="settings.colours.date_colour.title"></span>
+                  <span class="setting-desc" data-translate="settings.colours.date_colour.desc"></span>
+                </div>
+                <div class="colour-picker-widget">
+                  <button class="colour-swatch" type="button"></button>
+                  <input type="text" class="colour-hex-input" maxlength="7" spellcheck="false">
+                  <input type="color" id="colour_date" class="colour-hidden">
+                </div>
+              </div>
+              <div class="colour-sub-item">
+                <div class="setting-label">
+                  <span data-translate="settings.colours.weather_colour.title"></span>
+                  <span class="setting-desc" data-translate="settings.colours.weather_colour.desc"></span>
+                </div>
+                <div class="colour-picker-widget">
+                  <button class="colour-swatch" type="button"></button>
+                  <input type="text" class="colour-hex-input" maxlength="7" spellcheck="false">
+                  <input type="color" id="colour_weather" class="colour-hidden">
+                </div>
+              </div>
+              <div class="colour-sub-item">
+                <div class="setting-label">
+                  <span data-translate="settings.colours.bookmarks_colour.title"></span>
+                  <span class="setting-desc" data-translate="settings.colours.bookmarks_colour.desc"></span>
+                </div>
+                <div class="colour-picker-widget">
+                  <button class="colour-swatch" type="button"></button>
+                  <input type="text" class="colour-hex-input" maxlength="7" spellcheck="false">
+                  <input type="color" id="colour_bookmarks" class="colour-hidden">
+                </div>
+              </div>
+              <div class="colour-sub-item">
+                <div class="setting-label">
+                  <span data-translate="settings.colours.placeholder_colour.title"></span>
+                  <span class="setting-desc" data-translate="settings.colours.placeholder_colour.desc"></span>
+                </div>
+                <div class="colour-picker-widget">
+                  <button class="colour-swatch" type="button"></button>
+                  <input type="text" class="colour-hex-input" maxlength="7" spellcheck="false">
+                  <input type="color" id="colour_placeholder" class="colour-hidden">
+                </div>
+              </div>
+              <div class="colour-sub-item">
+                <div class="setting-label">
+                  <span data-translate="settings.colours.input_colour.title"></span>
+                  <span class="setting-desc" data-translate="settings.colours.input_colour.desc"></span>
+                </div>
+                <div class="colour-picker-widget">
+                  <button class="colour-swatch" type="button"></button>
+                  <input type="text" class="colour-hex-input" maxlength="7" spellcheck="false">
+                  <input type="color" id="colour_input" class="colour-hidden">
+                </div>
+              </div>
+            </div>
+          </div>
+          <button id="reset_colours_all" class="error-bg" data-translate="settings.colours.reset_btn"></button>
         </section>
 
         <!-- Font -->
@@ -237,6 +382,32 @@
                 <span class="setting-desc" data-translate="settings.hexbg.enable.desc"></span>
               </div>
               <input type="checkbox" id="hexbg">
+            </div>
+          </div>
+        </section>
+
+        <!-- Accessibility -->
+        <section class="settings-section" id="section-accessibility">
+          <h2 class="section-title" data-translate="settings.accessibility.title"></h2>
+          <p class="section-desc" data-translate="settings.accessibility.desc"></p>
+
+          <div class="setting-group">
+            <div class="setting-row">
+              <div class="setting-label">
+                <span data-translate="settings.accessibility.disable_text_shadow.title"></span>
+              </div>
+              <input type="checkbox" id="disableTextShadow">
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row setting-row--column">
+              <div class="setting-label">
+                <span data-translate="settings.accessibility.ui_scale.title"></span>
+                <span class="setting-desc" data-translate="settings.accessibility.ui_scale.desc"></span>
+              </div>
+              <div class="slider-row">
+                <input type="range" id="uiScale" min="0.5" max="1.5" step="0.1">
+                <span class="slider-value" id="uiScale-label">1.0</span>
+              </div>
             </div>
           </div>
         </section>

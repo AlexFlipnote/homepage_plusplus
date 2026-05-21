@@ -343,7 +343,7 @@ export class AnalogClock {
         this._minuteEl.style.transform = `rotate(${minuteDeg}deg)`
       }
     } else if (rawS >= 59) {
-      // Second half of park (59→60): smoothly animate toward next minute
+      // Second half of park (59->60): smoothly animate toward next minute
       const t = Math.min(rawS - 59, 1)
       const eased = t * t * (3 - 2 * t) // smoothstep
       const minuteDeg = minutes * 6 + 6 * eased

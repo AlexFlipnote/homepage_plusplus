@@ -2,15 +2,24 @@
   align-items: center;
   display: flex;
   flex-direction: column;
-  gap: 1rem 0;
   height: 100vh;
   justify-content: center;
   position: relative;
   transition: opacity .5s ease-out;
   width: 100vw;
 
+  .center-content {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transform: scale(var(--ui-scale));
+    transform-origin: center center;
+    width: 100%;
+  }
+
   #background {
-    filter: var(--blur-normal) brightness(75%);
+    filter: var(--blur-amount-bg) brightness(75%);
     height: 100%;
     left: 0;
     object-fit: cover;

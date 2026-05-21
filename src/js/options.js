@@ -5,10 +5,13 @@ import { WorldMap } from "./utils/openstreetmap.js"
 import { HexClock } from "./utils/timeManager.js"
 import { availableLanguages, translate, translationCoverage } from "./utils/i18n.js"
 
+const defaultColour = "#ffffff"
+
 export const extensionSettings = {
   language: "",
   searchbar: false,
   animations: false,
+  disableTextShadow: false,
   custombg: [],
   show_time: true,
   show_date: true,
@@ -37,7 +40,19 @@ export const extensionSettings = {
   notepadWidth: 300,
   notepadHeight: 220,
   clock_style: 0,
-  clock_jumbo: false
+  clock_jumbo: false,
+  colour_global: null,
+  colour_time: null,
+  colour_date: null,
+  colour_weather: null,
+  colour_bookmarks: null,
+  colour_icon: null,
+  colour_placeholder: null,
+  colour_input: null,
+  colour_blurbg: null,
+  uiScale: 1.0,
+  blurAmountUi: 3,
+  blurAmountBg: 3
 }
 
 const URLS = {
@@ -138,6 +153,14 @@ function saveOptions(message, css="") {
     return bookmarks
   }
 
+  function saveColour(elName) {
+    const el = document.getElementById(elName)
+    if (el && el.value === defaultColour) {
+      return null
+    }
+    return el ? el.value : null
+  }
+
   chrome.storage.local.set({
     language: document.getElementById("language").value,
     animations: document.getElementById("animations").checked,
@@ -148,6 +171,7 @@ function saveOptions(message, css="") {
     searchbar: document.getElementById("searchbar").checked,
     fmt_date: document.getElementById("fmt_date").value,
     customfont: document.getElementById("customfont").value,
+    disableTextShadow: document.getElementById("disableTextShadow").checked,
     customfontgoogle: document.getElementById("customfontgoogle").checked,
     wEnable: document.getElementById("wEnable").checked,
     wlat: userMap.marker ? userMap.marker.getLatLng().lat : 0,
@@ -166,7 +190,19 @@ function saveOptions(message, css="") {
     notepadEnabled: document.getElementById("notepadEnabled").checked,
     notepadInWindow: document.getElementById("notepadInWindow").checked,
     clock_style: parseInt(document.getElementById("clock_style").value),
-    clock_jumbo: document.getElementById("clock_jumbo").checked
+    clock_jumbo: document.getElementById("clock_jumbo").checked,
+    colour_global: saveColour("colour_global"),
+    colour_icon: saveColour("colour_icon"),
+    colour_time: saveColour("colour_time"),
+    colour_date: saveColour("colour_date"),
+    colour_weather: saveColour("colour_weather"),
+    colour_bookmarks: saveColour("colour_bookmarks"),
+    colour_placeholder: saveColour("colour_placeholder"),
+    colour_input: saveColour("colour_input"),
+    colour_blurbg: (() => { const el = document.getElementById("colour_blurbg"); return (el && el.value && el.value !== "#181818") ? el.value : null })(),
+    uiScale: parseFloat(document.getElementById("uiScale").value) || 1.0,
+    blurAmountUi: parseInt(document.getElementById("blurAmountUi").value) ?? 3,
+    blurAmountBg: parseInt(document.getElementById("blurAmountBg").value) ?? 3
   }, () => {
     createAlert(message, css)
   })
@@ -209,6 +245,10 @@ function restoreOptions() {
     const animations = document.getElementById("animations")
     animations.checked = items.animations
     animations.onchange = () => { saveOptions(`Animations set: ${animations.checked}`, animations.checked ? "add" : "remove") }
+
+    const disableTextShadow = document.getElementById("disableTextShadow")
+    disableTextShadow.checked = items.disableTextShadow
+    disableTextShadow.onchange = () => { saveOptions(`Text shadow disabled set: ${disableTextShadow.checked}`, disableTextShadow.checked ? "add" : "remove") }
 
     const showTime = document.getElementById("show_time")
     showTime.checked = items.show_time
@@ -321,6 +361,107 @@ function restoreOptions() {
     bookmarksFavicon.checked = items.bookmarksFavicon
     bookmarksFavicon.onchange = () => { saveOptions(`Bookmarks favicon set: ${bookmarksFavicon.checked}`, bookmarksFavicon.checked ? "add" : "remove") }
 
+    const uiScale = document.getElementById("uiScale")
+    const uiScaleLabel = document.getElementById("uiScale-label")
+    uiScale.value = items.uiScale
+    if (uiScaleLabel) uiScaleLabel.textContent = parseFloat(items.uiScale).toFixed(1)
+    uiScale.oninput = () => { if (uiScaleLabel) uiScaleLabel.textContent = parseFloat(uiScale.value).toFixed(1) }
+    uiScale.onchange = () => { saveOptions(`UI scale set: ${uiScale.value}`, "change") }
+
+    function initColourWidget(id, savedValue, label) {
+      const native = document.getElementById(id)
+      const widget = native.closest(".colour-picker-widget")
+      const swatch = widget.querySelector(".colour-swatch")
+      const hexInput = widget.querySelector(".colour-hex-input")
+
+      function applyValue(hex) {
+        const colour = hex || defaultColour
+        native.value = colour
+        hexInput.value = colour
+        hexInput.classList.remove("invalid")
+        swatch.style.setProperty("--swatch-color", colour)
+      }
+
+      applyValue(savedValue)
+
+      swatch.addEventListener("click", () => native.click())
+
+      native.addEventListener("input", () => {
+        hexInput.value = native.value
+        hexInput.classList.remove("invalid")
+        swatch.style.setProperty("--swatch-color", native.value)
+      })
+
+      native.addEventListener("change", () => {
+        saveOptions(`${label} set: ${native.value || "default"}`, native.value ? "change" : "remove")
+      })
+
+      hexInput.addEventListener("input", () => {
+        let v = hexInput.value.trim()
+        if (!v.startsWith("#")) v = "#" + v
+        if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+          hexInput.classList.remove("invalid")
+          native.value = v
+          swatch.style.setProperty("--swatch-color", v)
+        } else {
+          hexInput.classList.add("invalid")
+        }
+      })
+
+      hexInput.addEventListener("change", () => {
+        let v = hexInput.value.trim()
+        if (!v.startsWith("#")) v = "#" + v
+        if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+          hexInput.classList.remove("invalid")
+          native.value = v
+          swatch.style.setProperty("--swatch-color", v)
+          saveOptions(`${label} set: ${v}`, "change")
+        } else {
+          applyValue(native.value)
+        }
+      })
+
+      return { setValue: applyValue }
+    }
+
+    const colourGlobal = initColourWidget("colour_global", items.colour_global, "Global colour")
+    const colourIcon = initColourWidget("colour_icon", items.colour_icon, "Icon colour")
+    const colourTime = initColourWidget("colour_time", items.colour_time, "Time colour")
+    const colourDate = initColourWidget("colour_date", items.colour_date, "Date colour")
+    const colourWeather = initColourWidget("colour_weather", items.colour_weather, "Weather colour")
+    const colourBookmarks = initColourWidget("colour_bookmarks", items.colour_bookmarks, "Bookmarks colour")
+    const colourPlaceholder = initColourWidget("colour_placeholder", items.colour_placeholder, "Placeholder text colour")
+    const colourInput = initColourWidget("colour_input", items.colour_input, "Written text colour")
+    const colourBlurbg = initColourWidget("colour_blurbg", items.colour_blurbg || "#181818", "Blur background colour")
+
+    const colourResetAll = document.getElementById("reset_colours_all")
+    colourResetAll.onclick = () => {
+      colourGlobal.setValue(null)
+      colourIcon.setValue(null)
+      colourTime.setValue(null)
+      colourDate.setValue(null)
+      colourWeather.setValue(null)
+      colourBookmarks.setValue(null)
+      colourPlaceholder.setValue(null)
+      colourInput.setValue(null)
+      colourBlurbg.setValue("#181818")
+      saveOptions("All colours reset to default", "change")
+    }
+
+    const blurAmountUi = document.getElementById("blurAmountUi")
+    const blurAmountUiLabel = document.getElementById("blurAmountUi-label")
+    blurAmountUi.value = items.blurAmountUi
+    if (blurAmountUiLabel) blurAmountUiLabel.textContent = items.blurAmountUi
+    blurAmountUi.oninput = () => { if (blurAmountUiLabel) blurAmountUiLabel.textContent = blurAmountUi.value }
+    blurAmountUi.onchange = () => { saveOptions(`UI blur amount set: ${blurAmountUi.value}`, "change") }
+
+    const blurAmountBg = document.getElementById("blurAmountBg")
+    const blurAmountBgLabel = document.getElementById("blurAmountBg-label")
+    blurAmountBg.value = items.blurAmountBg
+    if (blurAmountBgLabel) blurAmountBgLabel.textContent = items.blurAmountBg
+    blurAmountBg.oninput = () => { if (blurAmountBgLabel) blurAmountBgLabel.textContent = blurAmountBg.value }
+    blurAmountBg.onchange = () => { saveOptions(`Background blur amount set: ${blurAmountBg.value}`, "change") }
+
     if (isFirefox) {
       document.getElementById("bmFavFirefox").style.display = "none"
     }
@@ -393,7 +534,7 @@ if (document.getElementById("settings-notification")) {
   document.addEventListener("DOMContentLoaded", () => {
     const categoryMap = {
       general: ["general", "timestamp"],
-      appearance: ["background", "font", "hexbg"],
+      appearance: ["background", "colours", "font", "hexbg", "accessibility"],
       features: ["weather", "bookmarks", "notepad"],
       advanced: ["customcss", "backup", "translations"]
     }

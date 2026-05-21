@@ -10,6 +10,7 @@
   #time { letter-spacing: .25rem; }
 
   #time, #date {
+    color: var(--font-primary);
     text-shadow: 0 0 .5rem #000;
     font-size: 5rem;
     font-variant-numeric: tabular-nums;
@@ -20,8 +21,8 @@
 }
 
 .analog-clock {
-  backdrop-filter: var(--blur-normal);
-  background: var(--highlight-alpha);
+  backdrop-filter: var(--blur-amount-ui);
+  background: var(--blur-background);
   border-radius: 50%;
   box-shadow: var(--box-shadow);
   font-size: 0;

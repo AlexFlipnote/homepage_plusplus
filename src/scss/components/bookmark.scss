@@ -13,13 +13,14 @@
   padding: 0;
   position: absolute;
   text-align: center;
-  transform: translateX(-50%);
+  transform: translateX(-50%) scale(var(--ui-scale));
+  transform-origin: bottom center;
   width: 80%;
 
   a {
     align-items: center;
-    backdrop-filter: var(--blur-normal);
-    background-color: var(--highlight-alpha);
+    backdrop-filter: var(--blur-amount-ui);
+    background-color: var(--blur-background);
     border-radius: .5rem;
     color: var(--font-primary);
     display: flex;
