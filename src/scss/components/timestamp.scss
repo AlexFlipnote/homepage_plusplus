@@ -7,10 +7,10 @@
   text-align: center;
   z-index: 9999;
 
-  #time { letter-spacing: .25rem; }
+  #time { letter-spacing: .25rem; color: var(--colour-time); }
+  #date { color: var(--colour-date); }
 
   #time, #date {
-    color: var(--font-primary);
     text-shadow: 0 0 .5rem #000;
     font-size: 5rem;
     font-variant-numeric: tabular-nums;
@@ -36,7 +36,8 @@
 
 // Tick marks, positioned so their base rotates around the clock centre
 .clock-mark {
-  background: rgba(255, 255, 255, 0.35);
+  background: var(--colour-time);
+  opacity: 0.35;
   bottom: calc(50% + 3.75rem);
   height: 0.5rem;
   left: calc(50% - 1px);
@@ -46,7 +47,8 @@
 }
 
 .clock-mark--hour {
-  background: var(--font-primary);
+  background: var(--colour-time);
+  opacity: 1;
   bottom: calc(50% + 3.25rem);
   height: 1rem;
   left: calc(50% - 2px);
@@ -62,13 +64,13 @@
 }
 
 .hand--hour {
-  background: var(--font-primary);
+  background: var(--colour-time);
   height: 30%;
   left: calc(50% - 0.25rem);
   width: 0.5rem;
 
   &::after {
-    background: var(--font-primary);
+    background: var(--colour-time);
     content: '';
     height: 30%;
     left: 0;
@@ -79,13 +81,13 @@
 }
 
 .hand--minute {
-  background: var(--font-primary);
+  background: var(--colour-time);
   height: 44%;
   left: calc(50% - 0.175rem);
   width: 0.35rem;
 
   &::after {
-    background: var(--font-primary);
+    background: var(--colour-time);
     content: '';
     height: 20%;
     left: 0;

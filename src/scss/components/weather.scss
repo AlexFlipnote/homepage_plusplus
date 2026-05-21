@@ -2,6 +2,7 @@
   animation: enter-left 1s ease-in-out;
   backdrop-filter: var(--blur-amount-ui);
   background-color: var(--blur-background);
+  color: var(--colour-weather);
   border-radius: 1rem;
   display: flex;
   flex-direction: column;
@@ -52,12 +53,12 @@
       }
 
       .forecast-hour {
-        color: var(--font-secondary);
+        color: var(--colour-weather);
         font-size: 0.75rem;
       }
 
       .forecast-temp {
-        color: var(--font-primary);
+        color: var(--colour-weather);
         font-size: 0.85rem;
       }
     }
@@ -76,20 +77,21 @@
       gap: 0.5rem;
 
       .daily-name {
-        color: var(--font-primary);
+        color: var(--colour-weather);
         flex: 1;
         font-size: 0.9rem;
       }
 
       .daily-high {
-        color: var(--font-primary);
+        color: var(--colour-weather);
         font-size: 0.85rem;
         min-width: 2rem;
         text-align: right;
       }
 
       .daily-low {
-        color: var(--font-secondary);
+        color: var(--colour-weather);
+        opacity: 0.75;
         font-size: 0.85rem;
       }
 

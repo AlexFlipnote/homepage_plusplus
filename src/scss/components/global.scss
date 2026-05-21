@@ -17,6 +17,11 @@ $chevron-up: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
   --box-shadow: 0 0 .75rem var(--blur-background);
 
+  --colour-time: var(--font-primary);
+  --colour-date: var(--font-primary);
+  --colour-weather: var(--font-primary);
+  --colour-bookmarks: var(--font-primary);
+
   --colour-icon: var(--font-primary);
   --colour-placeholder: var(--font-tertiary);
   --colour-input: var(--font-primary);

@@ -122,55 +122,26 @@ if (isExtension) {
       }
     }
 
+    const root = document.documentElement
+
     if (items.colour_global) {
-      document.documentElement.style.setProperty("--font-primary", items.colour_global)
-      document.documentElement.style.setProperty("--font-secondary", hexToRGBA(items.colour_global, 0.75))
-      document.documentElement.style.setProperty("--font-tertiary", hexToRGBA(items.colour_global, 0.5))
+      root.style.setProperty("--font-primary", items.colour_global)
+      root.style.setProperty("--font-secondary", hexToRGBA(items.colour_global, 0.75))
+      root.style.setProperty("--font-tertiary", hexToRGBA(items.colour_global, 0.5))
     }
 
-    if (items.colour_time) {
-      const timeEl = document.getElementById("time")
-      timeEl.style.color = items.colour_time
-    }
+    if (items.colour_time) root.style.setProperty("--colour-time", items.colour_time)
+    if (items.colour_date) root.style.setProperty("--colour-date", items.colour_date)
+    if (items.colour_weather) root.style.setProperty("--colour-weather", items.colour_weather)
+    if (items.colour_bookmarks) root.style.setProperty("--colour-bookmarks", items.colour_bookmarks)
+    if (items.colour_icon) root.style.setProperty("--colour-icon", items.colour_icon)
 
-    if (items.colour_date) {
-      const dateEl = document.getElementById("date")
-      dateEl.style.color = items.colour_date
-    }
+    if (items.colour_placeholder) root.style.setProperty("--colour-placeholder", items.colour_placeholder)
+    if (items.colour_input) root.style.setProperty("--colour-input", items.colour_input)
+    if (items.colour_blurbg) root.style.setProperty("--blur-background", hexToRGBA(items.colour_blurbg, 0.5))
 
-    if (items.colour_weather) {
-      const weatherEl = document.getElementById("weather-container")
-      weatherEl.style.color = items.colour_weather
-    }
-
-    if (items.colour_bookmarks) {
-      const bookmarksEl = document.getElementById("bookmarks")
-      bookmarksEl.style.color = items.colour_bookmarks
-    }
-
-    if (items.colour_icon) {
-      document.documentElement.style.setProperty("--colour-icon", items.colour_icon)
-    }
-
-    if (items.colour_placeholder) {
-      document.documentElement.style.setProperty("--colour-placeholder", items.colour_placeholder)
-    }
-
-    if (items.colour_input) {
-      document.documentElement.style.setProperty("--colour-input", items.colour_input)
-    }
-
-    if (items.colour_blurbg) {
-      document.documentElement.style.setProperty("--blur-background", hexToRGBA(items.colour_blurbg, 0.5))
-    }
-
-    if (items.blurAmountUi !== 3) {
-      document.documentElement.style.setProperty("--blur-amount-ui", `blur(${items.blurAmountUi}px)`)
-    }
-
-    if (items.blurAmountBg !== 3) {
-      document.documentElement.style.setProperty("--blur-amount-bg", `blur(${items.blurAmountBg}px)`)
-    }
+    if (items.blurAmountUi !== 3) root.style.setProperty("--blur-amount-ui", `blur(${items.blurAmountUi}px)`)
+    if (items.blurAmountBg !== 3) root.style.setProperty("--blur-amount-bg", `blur(${items.blurAmountBg}px)`)
 
     if (items.show_date) {
       new Clock("date", items.fmt_date || defaultDate).start()
