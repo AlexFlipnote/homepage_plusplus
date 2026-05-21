@@ -387,13 +387,25 @@ function restoreOptions() {
 
       swatch.addEventListener("click", () => native.click())
 
+      let saveDebounce = null
+      let lastSavedValue = native.value
+
       native.addEventListener("input", () => {
         hexInput.value = native.value
         hexInput.classList.remove("invalid")
         swatch.style.setProperty("--swatch-color", native.value)
+        clearTimeout(saveDebounce)
+        saveDebounce = setTimeout(() => {
+          if (native.value === lastSavedValue) return
+          lastSavedValue = native.value
+          saveOptions(`${label} set: ${native.value || "default"}`, native.value ? "change" : "remove")
+        }, 400)
       })
 
       native.addEventListener("change", () => {
+        clearTimeout(saveDebounce)
+        if (native.value === lastSavedValue) return
+        lastSavedValue = native.value
         saveOptions(`${label} set: ${native.value || "default"}`, native.value ? "change" : "remove")
       })
 
