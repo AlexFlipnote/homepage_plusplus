@@ -2,6 +2,7 @@ $gear-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 
 #demo-panel {
   backdrop-filter: var(--blur-amount-ui);
+  color: #fff !important;
   background-color: rgba(20, 20, 20, .85);
   border-left: 1px solid rgba(255, 255, 255, .08);
   bottom: 0;
@@ -19,6 +20,14 @@ $gear-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
   width: 33vw;
   min-width: 280px;
   z-index: 99999999999;
+
+  .demo-panel-close, select, select option {
+    color: #fff !important;
+  }
+
+  input[type=checkbox]:before {
+    background-color: #fff !important;
+  }
 
   &::-webkit-scrollbar { width: .35rem; }
   &::-webkit-scrollbar-track { background: transparent; }
@@ -75,6 +84,11 @@ $gear-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
       min-width: 0;
       width: 0;
     }
+  }
+
+  .colour-hex-input {
+    width: inherit !important;
+    color: #fff !important;
   }
 }
 

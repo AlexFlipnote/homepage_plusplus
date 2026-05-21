@@ -528,6 +528,39 @@ if (isExtension) {
     }
   }
 
+  // Global colour
+  const root = document.documentElement
+  const demoColourNative = document.getElementById("demoColourGlobal")
+  const demoColourWidget = demoColourNative.closest(".colour-picker-widget")
+  const demoColourSwatch = demoColourWidget.querySelector(".colour-swatch")
+  const demoColourHex = demoColourWidget.querySelector(".colour-hex-input")
+
+  function applyGlobalColour(hex) {
+    demoColourNative.value = hex
+    demoColourHex.value = hex
+    demoColourHex.classList.remove("invalid")
+    demoColourSwatch.style.setProperty("--swatch-color", hex)
+    root.style.setProperty("--font-primary", hex)
+    root.style.setProperty("--font-secondary", hexToRGBA(hex, 0.75))
+    root.style.setProperty("--font-tertiary", hexToRGBA(hex, 0.5))
+  }
+
+  demoColourSwatch.addEventListener("click", () => demoColourNative.click())
+
+  demoColourNative.addEventListener("input", () => {
+    applyGlobalColour(demoColourNative.value)
+  })
+
+  demoColourHex.addEventListener("input", () => {
+    let v = demoColourHex.value.trim()
+    if (!v.startsWith("#")) v = "#" + v
+    if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+      applyGlobalColour(v)
+    } else {
+      demoColourHex.classList.add("invalid")
+    }
+  })
+
   // UI scale
   const demoUiScale = document.getElementById("demoUiScale")
   const demoUiScaleLabel = document.getElementById("demoUiScale-label")
