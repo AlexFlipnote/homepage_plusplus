@@ -1,6 +1,6 @@
 import Sortable from "sortablejs"
 
-import { isFirefox, version } from "./utils/browser.js"
+import { isFirefox, getVersion } from "./utils/browser.js"
 import { WorldMap } from "./utils/openstreetmap.js"
 import { HexClock } from "./utils/timeManager.js"
 import { availableLanguages, translate, translationCoverage } from "./utils/i18n.js"
@@ -80,7 +80,7 @@ function applyTranslations(lang) {
 // We don't care where it loads, if it finds it, replace it
 const findVersion = document.getElementById("version-label")
 if (findVersion) {
-  findVersion.textContent = `v${version}`
+  findVersion.textContent = `v${getVersion()}`
 }
 
 const userMap = new WorldMap()

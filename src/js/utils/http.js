@@ -1,4 +1,4 @@
-import { version } from "./browser.js"
+import { getVersion } from "./browser.js"
 
 /**
  * Make an HTTP request, returning the response as JSON.
@@ -15,7 +15,7 @@ export async function http(method, url) {
       "Content-Type": "application/json",
       // The only reason I use X-* headers is because some browsers refuse to set custom "unsafe headers"
       "X-Referer": "https://alexflipnote.dev/homepage_plusplus",
-      "X-User-Agent": `Homepage++/${version}`
+      "X-User-Agent": `Homepage++/${getVersion()}`
     }
   })
 

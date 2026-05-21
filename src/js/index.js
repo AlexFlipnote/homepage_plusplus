@@ -1,4 +1,4 @@
-import { isFirefox, isExtension, version } from "./utils/browser"
+import { isFirefox, isExtension, getVersion } from "./utils/browser"
 import { extensionSettings } from "./options.js"
 import { getWeather } from "./utils/weather.js"
 import { HexClock, Clock, TumblerClock, AnalogClock, CLOCK_STYLE } from "./utils/timeManager.js"
@@ -69,7 +69,7 @@ function createBookmark(
 
 if (isExtension) {
   // Extension mode
-  console.log(`☑️ Running in extension mode (v${version})`)
+  console.log(`☑️ Running in extension mode (v${getVersion()})`)
 
   const runtimeOnlyKeys = ["notepadContent", "notepadOpen", "notepadWidth", "notepadHeight"]
   chrome.storage.onChanged.addListener((changes, area) => {
