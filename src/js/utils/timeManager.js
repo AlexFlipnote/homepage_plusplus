@@ -3,7 +3,8 @@ import { translate, SELECTED_LANG } from "./i18n.js"
 export const CLOCK_STYLE = {
   DIGITAL: 0,
   TUMBLER: 1,
-  SWISS: 2
+  SWISS: 2,
+  HEX: 3
 }
 
 export function compileStrftime(fmt) {

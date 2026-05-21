@@ -90,7 +90,8 @@ if (isExtension) {
 
     const clockStyleMap = {
       [CLOCK_STYLE.TUMBLER]: TumblerClock,
-      [CLOCK_STYLE.SWISS]: AnalogClock
+      [CLOCK_STYLE.SWISS]: AnalogClock,
+      [CLOCK_STYLE.HEX]: HexClock
     }
     const TimeClock = clockStyleMap[items.clock_style] ?? Clock
 
@@ -99,7 +100,11 @@ if (isExtension) {
     }
 
     if (items.show_time) {
-      new TimeClock("time", items.fmt_time || defaultTime).start()
+      if (TimeClock === HexClock) {
+        new TimeClock("time", { color: true, text: true }).start()
+      } else {
+        new TimeClock("time", items.fmt_time || defaultTime).start()
+      }
     }
 
     if (items.show_date) {
@@ -211,7 +216,8 @@ if (isExtension) {
     }
 
     if (items.hexbg) {
-      backgroundElement.src = ""
+      // Use a 1x1 transparent gif as the background, to not have an error
+      backgroundElement.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
       new HexClock(document.body, {background: true}).start()
     } else {
       backgroundElement.src = newBackground
