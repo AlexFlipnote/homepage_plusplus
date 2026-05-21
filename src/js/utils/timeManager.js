@@ -351,7 +351,7 @@ export class AnalogClock {
       this._hourEl.style.transform = `rotate(${hourDeg}deg)`
       this._minuteEl.style.transform = `rotate(${minuteDeg}deg)`
     }
-    // rawS 58–59: second parked, hands static, no update needed
+    // rawS 58-59: second parked, hands static, no update needed
   }
 
   start() {
