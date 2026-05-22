@@ -112,10 +112,14 @@
         <span data-translate="settings.timestamp.clock_style.title"></span>
         <select id="clockStyle">
           <option value="digital">Digital</option>
-          <option value="tumbler">Tumbler</option>
           <option value="analog">Analog (Swiss)</option>
           <option value="hex">Hex color</option>
+          <option value="unix">Unix Timestamp</option>
         </select>
+      </label>
+      <label>
+        <input type="checkbox" id="tumblerToggle">
+        <span data-translate="settings.timestamp.clock_tumbler.title"></span>
       </label>
       <label class="default" id="clockFormatLabel">
         <span data-translate="settings.timestamp.time_format.title"></span>
@@ -126,8 +130,8 @@
         <input type="text" id="changeDate" placeholder="%e. %B %Y">
       </label>
       <label>
-        <input type="checkbox" id="jumboToggle">
-        <span data-translate="settings.timestamp.clock_jumbo.title"></span>
+        <input type="checkbox" id="time12hToggle">
+        <span data-translate="settings.timestamp.time_12h.title"></span>
       </label>
       <label>
         <input type="checkbox" id="timeToggle" checked>
@@ -164,9 +168,9 @@
       </label>
 
       <label>
-        <span data-translate="settings.accessibility.ui_scale.title"></span>
+        <span data-translate="settings.scale.global.title"></span>
         <div class="slider-row">
-          <input type="range" id="demoUiScale" min="0.5" max="1.5" step="0.1" value="1.0">
+          <input type="range" id="demoUiScale" min="0.5" max="2.0" step="0.1" value="1.0">
           <span id="demoUiScale-label">1.0</span>
         </div>
       </label>
