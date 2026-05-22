@@ -1,5 +1,17 @@
+@keyframes enter-page-search {
+  from {
+    opacity: 0;
+    transform: scale(var(--ui-scale-searchbar)) translateY(15rem);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(var(--ui-scale-searchbar)) translateY(0);
+  }
+}
+
 #search-form {
-  animation: enter-page 1s ease-in-out;
+  animation: enter-page-search 1s ease-in-out;
   margin: 0 auto;
   max-width: 50rem;
   position: relative;

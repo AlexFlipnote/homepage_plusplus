@@ -71,7 +71,8 @@ const URLS = {
 
 function applyTranslations(lang) {
   document.querySelectorAll("[data-translate]").forEach(el => {
-    let text = translate(lang, el.dataset.translate)
+    const args = el.dataset.translateDefault !== undefined ? { default: el.dataset.translateDefault } : {}
+    let text = translate(lang, el.dataset.translate, args)
     text = text.replace(/\n/g, "<br>")
     text = text.replace(/\{url:(\w+)\}/g, (_, key) => {
       const u = URLS[key]
