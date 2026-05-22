@@ -41,7 +41,8 @@ export const extensionSettings = {
   notepadWidth: 300,
   notepadHeight: 220,
   clock_style: 0,
-  clock_jumbo: false,
+  clock_tumbler: false,
+  time_12h: false,
   colour_global: null,
   colour_time: null,
   colour_date: null,
@@ -52,6 +53,12 @@ export const extensionSettings = {
   colour_input: null,
   colour_blurbg: null,
   uiScale: 1.0,
+  scaleClock: null,
+  scaleDate: null,
+  scaleSearchbar: null,
+  scaleWeather: null,
+  scaleBookmarks: null,
+  scaleIcon: null,
   blurAmountUi: 3,
   blurAmountBg: 3
 }
@@ -133,6 +140,11 @@ function importSettings(file) {
   reader.readAsText(file)
 }
 
+function readScale(id) {
+  const v = parseFloat(document.getElementById(id).value)
+  return Number.isNaN(v) || v === 1.0 ? null : v
+}
+
 // Saves options to chrome.storage
 function saveOptions(message, css="") {
   const custombg = []
@@ -191,7 +203,8 @@ function saveOptions(message, css="") {
     notepadEnabled: document.getElementById("notepadEnabled").checked,
     notepadInWindow: document.getElementById("notepadInWindow").checked,
     clock_style: parseInt(document.getElementById("clock_style").value),
-    clock_jumbo: document.getElementById("clock_jumbo").checked,
+    clock_tumbler: document.getElementById("clock_tumbler").checked,
+    time_12h: document.getElementById("time_12h").checked,
     colour_global: saveColour("colour_global"),
     colour_icon: saveColour("colour_icon"),
     colour_time: saveColour("colour_time"),
@@ -202,6 +215,12 @@ function saveOptions(message, css="") {
     colour_input: saveColour("colour_input"),
     colour_blurbg: saveColour("colour_blurbg", defaultColourBlurBg),
     uiScale: parseFloat(document.getElementById("uiScale").value) || 1.0,
+    scaleClock: readScale("scaleClock"),
+    scaleDate: readScale("scaleDate"),
+    scaleSearchbar: readScale("scaleSearchbar"),
+    scaleWeather: readScale("scaleWeather"),
+    scaleBookmarks: readScale("scaleBookmarks"),
+    scaleIcon: readScale("scaleIcon"),
     blurAmountUi: parseInt(document.getElementById("blurAmountUi").value) ?? 3,
     blurAmountBg: parseInt(document.getElementById("blurAmountBg").value) ?? 3
   }, () => {
@@ -286,19 +305,39 @@ function restoreOptions() {
 
     const fmtTime = document.getElementById("fmt_time")
     fmtTime.value = items.fmt_time
+    fmtTime.placeholder = translate(items.language, items.time_12h ? "time.format.default_12h" : "time.format.default")
     fmtTime.onchange = () => { saveOptions(`Time format set: ${fmtTime.value || "default"}`, fmtTime.value ? "change" : "remove") }
 
     const fmtDate = document.getElementById("fmt_date")
     fmtDate.value = items.fmt_date
     fmtDate.onchange = () => { saveOptions(`Date format set: ${fmtDate.value || "default"}`, fmtDate.value ? "change" : "remove") }
 
+    function syncClockStyleUI(style) {
+      const isSwiss = style === 2
+      const isDigital = style === 0
+      document.getElementById("row-clock-tumbler").classList.toggle("setting-row--disabled", isSwiss)
+      document.getElementById("row-time-12h").classList.toggle("setting-row--disabled", !isDigital)
+      document.getElementById("group-fmt-time").classList.toggle("setting-group--disabled", !isDigital)
+    }
+
     const clockStyle = document.getElementById("clock_style")
     clockStyle.value = items.clock_style
-    clockStyle.onchange = () => { saveOptions(`Clock style set: ${clockStyle.value}`, "change") }
+    clockStyle.onchange = () => {
+      syncClockStyleUI(parseInt(clockStyle.value))
+      saveOptions(`Clock style set: ${clockStyle.value}`, "change")
+    }
+    syncClockStyleUI(items.clock_style)
 
-    const clockJumbo = document.getElementById("clock_jumbo")
-    clockJumbo.checked = items.clock_jumbo
-    clockJumbo.onchange = () => { saveOptions(`Jumbo clock set: ${clockJumbo.checked}`, clockJumbo.checked ? "add" : "remove") }
+    const clockTumbler = document.getElementById("clock_tumbler")
+    clockTumbler.checked = items.clock_tumbler
+    clockTumbler.onchange = () => { saveOptions(`Tumbler effect set: ${clockTumbler.checked}`, clockTumbler.checked ? "add" : "remove") }
+
+    const time12h = document.getElementById("time_12h")
+    time12h.checked = items.time_12h
+    time12h.onchange = () => {
+      fmtTime.placeholder = translate(items.language, time12h.checked ? "time.format.default_12h" : "time.format.default")
+      saveOptions(`12h clock set: ${time12h.checked}`, time12h.checked ? "add" : "remove")
+    }
 
     const customfont = document.getElementById("customfont")
     customfont.value = items.customfont
@@ -368,6 +407,37 @@ function restoreOptions() {
     if (uiScaleLabel) uiScaleLabel.textContent = parseFloat(items.uiScale).toFixed(1)
     uiScale.oninput = () => { if (uiScaleLabel) uiScaleLabel.textContent = parseFloat(uiScale.value).toFixed(1) }
     uiScale.onchange = () => { saveOptions(`UI scale set: ${uiScale.value}`, "change") }
+
+    function initScaleSlider(id, storedValue, label) {
+      const el = document.getElementById(id)
+      const labelEl = document.getElementById(`${id}-label`)
+      const display = storedValue ?? 1.0
+      el.value = display
+      if (labelEl) labelEl.textContent = display.toFixed(1)
+      el.oninput = () => { if (labelEl) labelEl.textContent = parseFloat(el.value).toFixed(1) }
+      el.onchange = () => { saveOptions(`${label} scale set: ${el.value}`, "change") }
+    }
+
+    initScaleSlider("scaleClock", items.scaleClock, "Clock")
+    initScaleSlider("scaleDate", items.scaleDate, "Date")
+    initScaleSlider("scaleSearchbar", items.scaleSearchbar, "Search bar")
+    initScaleSlider("scaleWeather", items.scaleWeather, "Weather")
+    initScaleSlider("scaleBookmarks", items.scaleBookmarks, "Bookmarks")
+    initScaleSlider("scaleIcon", items.scaleIcon, "Icons")
+
+    const resetIndividualScales = document.getElementById("reset-individual-scales")
+    if (resetIndividualScales) {
+      resetIndividualScales.onclick = () => {
+        const ids = ["scaleClock", "scaleDate", "scaleSearchbar", "scaleWeather", "scaleBookmarks", "scaleIcon"]
+        ids.forEach(id => {
+          const el = document.getElementById(id)
+          const labelEl = document.getElementById(`${id}-label`)
+          if (el) el.value = 1.0
+          if (labelEl) labelEl.textContent = "1.0"
+        })
+        saveOptions("Individual scales reset to global", "change")
+      }
+    }
 
     function initColourWidget(id, savedValue, label, defaultValue = defaultColour) {
       const native = document.getElementById(id)
@@ -547,7 +617,7 @@ if (document.getElementById("settings-notification")) {
   document.addEventListener("DOMContentLoaded", () => {
     const categoryMap = {
       general: ["general", "timestamp"],
-      appearance: ["background", "colours", "font", "hexbg", "accessibility"],
+      appearance: ["background", "colours", "font", "hexbg", "scale", "accessibility"],
       features: ["weather", "bookmarks", "notepad"],
       advanced: ["customcss", "backup", "translations"]
     }
@@ -591,6 +661,7 @@ if (document.getElementById("settings-notification")) {
           const top = target.getBoundingClientRect().top - content.getBoundingClientRect().top + content.scrollTop
           content.scrollTop = top
         }
+        if (userMap.map) userMap.map.invalidateSize()
       })
     }
 

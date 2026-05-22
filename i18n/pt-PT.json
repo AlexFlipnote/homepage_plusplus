@@ -7,6 +7,7 @@
   "demo.weather.condition": "Sunholder",
   "demo.install": "Adicionar ao {browser}",
   "time.format.default": "%H:%M:%S",
+  "time.format.default_12h": "%I:%M:%S %p",
   "date.format.default": "%e. %B %Y",
   "date.days.long.monday": "Segunda-feira",
   "date.days.long.tuesday": "Terça-feira",

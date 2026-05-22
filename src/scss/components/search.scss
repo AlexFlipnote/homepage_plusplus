@@ -3,6 +3,8 @@
   margin: 0 auto;
   max-width: 50rem;
   position: relative;
+  transform: scale(var(--ui-scale-searchbar));
+  transform-origin: top center;
   width: 80%;
 
   &:before {

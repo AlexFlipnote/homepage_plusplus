@@ -1,8 +1,9 @@
 import { isFirefox, isExtension, getVersion } from "./utils/browser"
 import { extensionSettings } from "./options.js"
 import { getWeather } from "./utils/weather.js"
-import { HexClock, Clock, TumblerClock, AnalogClock, CLOCK_STYLE } from "./utils/timeManager.js"
+import { HexClock, Clock, TumblerClock, AnalogClock, UnixClock, CLOCK_STYLE } from "./utils/timeManager.js"
 import { availableLanguages, setLocale, translate, getLocale } from "./utils/i18n.js"
+import { runMigrations } from "./utils/migrate.js"
 
 const DEFAULT = {
   backgroundImagesCount: 31
@@ -70,6 +71,7 @@ function createBookmark(
 if (isExtension) {
   // Extension mode
   console.log(`☑️ Running in extension mode (v${getVersion()})`)
+  runMigrations()
 
   const runtimeOnlyKeys = ["notepadContent", "notepadOpen", "notepadWidth", "notepadHeight"]
   chrome.storage.onChanged.addListener((changes, area) => {
@@ -92,37 +94,57 @@ if (isExtension) {
 
     // Start by setting language
     setLocale(items.language)
-    const defaultTime = translate(items.language, "time.format.default")
+    const defaultTime = translate(items.language, items.time_12h ? "time.format.default_12h" : "time.format.default")
     const defaultDate = translate(items.language, "date.format.default")
-
-    const clockStyleMap = {
-      [CLOCK_STYLE.TUMBLER]: TumblerClock,
-      [CLOCK_STYLE.SWISS]: AnalogClock,
-      [CLOCK_STYLE.HEX]: HexClock
-    }
-    const TimeClock = clockStyleMap[items.clock_style] ?? Clock
-
-    if (items.clock_jumbo) {
-      document.querySelector(".time-container")?.classList.add("jumbo")
-    }
 
     if (items.disableTextShadow) {
       document.body.classList.add("no-text-shadow")
     }
 
     if (items.uiScale && items.uiScale !== 1.0) {
-      document.documentElement.style.setProperty("--ui-scale", items.uiScale)
+      document.documentElement.style.setProperty("--ui-scale-global", items.uiScale)
     }
 
     if (items.show_time) {
-      if (TimeClock === HexClock) {
-        new TimeClock("time", { color: true, text: true }).start()
+      const style = items.clock_style
+      const fmt = items.fmt_time || defaultTime
+
+      if (style === CLOCK_STYLE.SWISS) {
+        new AnalogClock("time").start()
+      } else if (items.clock_tumbler) {
+        const timeEl = document.getElementById("time")
+        let tumblerFmt
+        if (style === CLOCK_STYLE.HEX) {
+          tumblerFmt = () => {
+            const pad = n => ("0" + n).slice(-2)
+            const now = new Date()
+            const hex = `#${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`
+            timeEl.style.color = hex
+            return hex
+          }
+        } else if (style === CLOCK_STYLE.UNIX) {
+          tumblerFmt = () => String(Math.floor(Date.now() / 1000))
+        } else {
+          tumblerFmt = fmt
+        }
+        new TumblerClock("time", tumblerFmt).start()
+      } else if (style === CLOCK_STYLE.HEX) {
+        new HexClock("time", { color: true, text: true }).start()
+      } else if (style === CLOCK_STYLE.UNIX) {
+        new UnixClock("time").start()
       } else {
-        new TimeClock("time", items.fmt_time || defaultTime).start()
+        new Clock("time", fmt).start()
       }
     }
 
     const root = document.documentElement
+
+    if (items.scaleClock) root.style.setProperty("--ui-scale-clock", items.scaleClock)
+    if (items.scaleDate) root.style.setProperty("--ui-scale-date", items.scaleDate)
+    if (items.scaleSearchbar) root.style.setProperty("--ui-scale-searchbar", items.scaleSearchbar)
+    if (items.scaleWeather) root.style.setProperty("--ui-scale-weather", items.scaleWeather)
+    if (items.scaleBookmarks) root.style.setProperty("--ui-scale-bookmarks", items.scaleBookmarks)
+    if (items.scaleIcon) root.style.setProperty("--ui-scale-icon", items.scaleIcon)
 
     if (items.colour_global) {
       root.style.setProperty("--font-primary", items.colour_global)
@@ -402,6 +424,7 @@ if (isExtension) {
   wname.textContent = translate(undefined, "demo.weather.location")
   wdescription.textContent = translate(undefined, "demo.weather.condition")
 
+  let demo12h = false
   let timeClock = new Clock("time", translate(undefined, "time.format.default"))
   timeClock.start()
 
@@ -432,23 +455,36 @@ if (isExtension) {
     const timeEl = document.getElementById("time")
     timeEl.style.color = ""
 
-    const fmt = document.getElementById("changeClock").value || translate(getLocale(), "time.format.default")
+    const fmt = document.getElementById("changeClock").value || translate(getLocale(), demo12h ? "time.format.default_12h" : "time.format.default")
+    const useTumbler = document.getElementById("tumblerToggle").checked
 
     switch (style) {
-    case "tumbler":
-      timeClock = new TumblerClock("time", fmt)
-      clockFormatLabel.style.display = ""
-      break
     case "analog":
       timeClock = new AnalogClock("time")
       clockFormatLabel.style.display = "none"
       break
-    case "hex":
-      timeClock = new HexClock("time", { color: true, text: true })
+    case "hex": {
+      const timeEl = document.getElementById("time")
+      timeClock = useTumbler
+        ? new TumblerClock("time", () => {
+          const pad = n => ("0" + n).slice(-2)
+          const now = new Date()
+          const hex = `#${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`
+          timeEl.style.color = hex
+          return hex
+        })
+        : new HexClock("time", { color: true, text: true })
+      clockFormatLabel.style.display = "none"
+      break
+    }
+    case "unix":
+      timeClock = useTumbler
+        ? new TumblerClock("time", () => String(Math.floor(Date.now() / 1000)))
+        : new UnixClock("time")
       clockFormatLabel.style.display = "none"
       break
     default:
-      timeClock = new Clock("time", fmt)
+      timeClock = useTumbler ? new TumblerClock("time", fmt) : new Clock("time", fmt)
       clockFormatLabel.style.display = ""
     }
 
@@ -459,8 +495,16 @@ if (isExtension) {
     switchClockStyle(e.target.value)
   }
 
-  document.getElementById("jumboToggle").onclick = function() {
-    document.querySelector(".time-container").classList.toggle("jumbo", this.checked)
+  document.getElementById("tumblerToggle").onclick = function() {
+    switchClockStyle(document.getElementById("clockStyle").value)
+  }
+
+  document.getElementById("time12hToggle").onclick = function() {
+    demo12h = this.checked
+    const customFmt = document.getElementById("changeClock").value
+    if (!customFmt && timeClock.changeFormat) {
+      timeClock.changeFormat(translate(getLocale(), demo12h ? "time.format.default_12h" : "time.format.default"))
+    }
   }
 
   document.getElementById("demo-panel").style.display = "flex"
@@ -567,7 +611,7 @@ if (isExtension) {
   demoUiScale.oninput = () => {
     const val = parseFloat(demoUiScale.value).toFixed(1)
     demoUiScaleLabel.textContent = val
-    document.documentElement.style.setProperty("--ui-scale", val)
+    document.documentElement.style.setProperty("--ui-scale-global", val)
   }
 
   // Toggle bookmarks
@@ -677,7 +721,7 @@ if (isExtension) {
   document.getElementById("changeClock").oninput = (el) => {
     if (!timeClock.changeFormat) return
     const format = el.target.value
-    timeClock.changeFormat(format || translate(getLocale(), "time.format.default"))
+    timeClock.changeFormat(format || translate(getLocale(), demo12h ? "time.format.default_12h" : "time.format.default"))
   }
 
   // Change date format
@@ -721,7 +765,7 @@ if (isExtension) {
 
     setLocale(getLangVal)
     updateDemoLabels(getLangVal)
-    if (timeClock.changeFormat) timeClock.changeFormat(translate(getLangVal, "time.format.default"))
+    if (timeClock.changeFormat) timeClock.changeFormat(translate(getLangVal, demo12h ? "time.format.default_12h" : "time.format.default"))
     dateClock.changeFormat(translate(getLangVal, "date.format.default"))
 
     const searchInput = document.getElementById("search-input")

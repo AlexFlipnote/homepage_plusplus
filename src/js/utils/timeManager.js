@@ -2,9 +2,9 @@ import { translate, SELECTED_LANG } from "./i18n.js"
 
 export const CLOCK_STYLE = {
   DIGITAL: 0,
-  TUMBLER: 1,
   SWISS: 2,
-  HEX: 3
+  HEX: 3,
+  UNIX: 4
 }
 
 export function compileStrftime(fmt) {
@@ -209,6 +209,7 @@ export class TumblerClock {
   }
 
   getTime() {
+    if (typeof this.format === "function") return this.format()
     const fmt = compileStrftime(this.format)
     return fmt(new Date())
   }
@@ -367,6 +368,32 @@ export class AnalogClock {
     this.el.innerHTML = ""
     this._initialized = false
     this._lastMinuteDeg = null
+  }
+}
+
+export class UnixClock {
+  constructor(el) {
+    this.el = typeof el === "string" ? document.getElementById(el) : el
+    this.animationFrameId = null
+    this._lastTime = null
+  }
+
+  getTime() {
+    return String(Math.floor(Date.now() / 1000))
+  }
+
+  start() {
+    const time = this.getTime()
+    if (time !== this._lastTime) {
+      this._lastTime = time
+      this.el.textContent = time
+    }
+    this.animationFrameId = requestAnimationFrame(() => this.start())
+  }
+
+  stop() {
+    cancelAnimationFrame(this.animationFrameId)
+    this._lastTime = null
   }
 }
 

@@ -25,6 +25,7 @@
         <button class="sidebar-item" data-section="colours" data-category="general" data-translate="settings.nav.section.colours"></button>
         <button class="sidebar-item" data-section="font" data-category="appearance" data-translate="settings.nav.section.font"></button>
         <button class="sidebar-item" data-section="hexbg" data-category="appearance" data-translate="settings.nav.section.hexbg"></button>
+        <button class="sidebar-item" data-section="scale" data-category="appearance" data-translate="settings.nav.section.scale"></button>
         <button class="sidebar-item" data-section="accessibility" data-category="general" data-translate="settings.nav.section.accessibility"></button>
 
         <span class="sidebar-category" data-translate="settings.nav.category.features"></span>
@@ -114,20 +115,30 @@
               </div>
               <select id="clock_style">
                 <option value="0">Digital (Default)</option>
-                <option value="1">Tumbler</option>
                 <option value="2">Analog (Swiss)</option>
                 <option value="3">Hex Colour</option>
+                <option value="4">Unix Timestamp</option>
               </select>
             </div>
             <div class="setting-divider"></div>
-            <div class="setting-row">
+            <div class="setting-row" id="row-clock-tumbler">
               <div class="setting-label">
-                <span data-translate="settings.timestamp.clock_jumbo.title"></span>
-                <span class="setting-desc" data-translate="settings.timestamp.clock_jumbo.desc"></span>
+                <span data-translate="settings.timestamp.clock_tumbler.title"></span>
+                <span class="setting-desc" data-translate="settings.timestamp.clock_tumbler.desc"></span>
               </div>
-              <input type="checkbox" id="clock_jumbo">
+              <input type="checkbox" id="clock_tumbler">
             </div>
             <div class="setting-divider"></div>
+            <div class="setting-row" id="row-time-12h">
+              <div class="setting-label">
+                <span data-translate="settings.timestamp.time_12h.title"></span>
+                <span class="setting-desc" data-translate="settings.timestamp.time_12h.desc"></span>
+              </div>
+              <input type="checkbox" id="time_12h">
+            </div>
+          </div>
+
+          <div class="setting-group" id="group-fmt-time">
             <div class="setting-row setting-row--column">
               <div class="setting-label">
                 <span data-translate="settings.timestamp.time_format.title"></span>
@@ -135,7 +146,31 @@
               </div>
               <input id="fmt_time" placeholder="%H:%M:%S">
             </div>
-            <div class="setting-divider"></div>
+            <div class="format-ref-table">
+              <table cellspacing="0" cellpadding="0">
+                <thead>
+                  <tr>
+                    <th data-translate="settings.timestamp.format_ref.col.format"></th>
+                    <th data-translate="settings.timestamp.format_ref.col.desc"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>%H</td><td data-translate="settings.timestamp.format_ref.pct_H"></td></tr>
+                  <tr><td>%I</td><td data-translate="settings.timestamp.format_ref.pct_I"></td></tr>
+                  <tr><td>%p</td><td data-translate="settings.timestamp.format_ref.pct_p"></td></tr>
+                  <tr><td>%M</td><td data-translate="settings.timestamp.format_ref.pct_M"></td></tr>
+                  <tr><td>%S</td><td data-translate="settings.timestamp.format_ref.pct_S"></td></tr>
+                  <tr><td>%f</td><td data-translate="settings.timestamp.format_ref.pct_f"></td></tr>
+                  <tr><td>%z</td><td data-translate="settings.timestamp.format_ref.pct_z"></td></tr>
+                  <tr><td>%Z</td><td data-translate="settings.timestamp.format_ref.pct_Z"></td></tr>
+                  <tr><td>%T</td><td data-translate="settings.timestamp.format_ref.pct_T"></td></tr>
+                  <tr><td>%%</td><td data-translate="settings.timestamp.format_ref.pct_pct"></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="setting-group">
             <div class="setting-row setting-row--column">
               <div class="setting-label">
                 <span data-translate="settings.timestamp.date_format.title"></span>
@@ -143,42 +178,30 @@
               </div>
               <input id="fmt_date" placeholder="%e. %B %Y">
             </div>
-          </div>
-
-          <h3 class="subsection-title" data-translate="settings.timestamp.format_ref"></h3>
-          <div class="format-ref-table">
-            <table cellspacing="0" cellpadding="0">
-              <thead>
-                <tr>
-                  <th data-translate="settings.timestamp.format_ref.col.format"></th>
-                  <th data-translate="settings.timestamp.format_ref.col.desc"></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td>%Y</td><td data-translate="settings.timestamp.format_ref.pct_Y"></td></tr>
-                <tr><td>%y</td><td data-translate="settings.timestamp.format_ref.pct_y"></td></tr>
-                <tr><td>%m</td><td data-translate="settings.timestamp.format_ref.pct_m"></td></tr>
-                <tr><td>%B</td><td data-translate="settings.timestamp.format_ref.pct_B"></td></tr>
-                <tr><td>%b</td><td data-translate="settings.timestamp.format_ref.pct_b"></td></tr>
-                <tr><td>%d</td><td data-translate="settings.timestamp.format_ref.pct_d"></td></tr>
-                <tr><td>%e</td><td data-translate="settings.timestamp.format_ref.pct_e"></td></tr>
-                <tr><td>%j</td><td data-translate="settings.timestamp.format_ref.pct_j"></td></tr>
-                <tr><td>%A</td><td data-translate="settings.timestamp.format_ref.pct_A"></td></tr>
-                <tr><td>%a</td><td data-translate="settings.timestamp.format_ref.pct_a"></td></tr>
-                <tr><td>%w</td><td data-translate="settings.timestamp.format_ref.pct_w"></td></tr>
-                <tr><td>%H</td><td data-translate="settings.timestamp.format_ref.pct_H"></td></tr>
-                <tr><td>%I</td><td data-translate="settings.timestamp.format_ref.pct_I"></td></tr>
-                <tr><td>%p</td><td data-translate="settings.timestamp.format_ref.pct_p"></td></tr>
-                <tr><td>%M</td><td data-translate="settings.timestamp.format_ref.pct_M"></td></tr>
-                <tr><td>%S</td><td data-translate="settings.timestamp.format_ref.pct_S"></td></tr>
-                <tr><td>%f</td><td data-translate="settings.timestamp.format_ref.pct_f"></td></tr>
-                <tr><td>%z</td><td data-translate="settings.timestamp.format_ref.pct_z"></td></tr>
-                <tr><td>%Z</td><td data-translate="settings.timestamp.format_ref.pct_Z"></td></tr>
-                <tr><td>%F</td><td data-translate="settings.timestamp.format_ref.pct_F"></td></tr>
-                <tr><td>%T</td><td data-translate="settings.timestamp.format_ref.pct_T"></td></tr>
-                <tr><td>%%</td><td data-translate="settings.timestamp.format_ref.pct_pct"></td></tr>
-              </tbody>
-            </table>
+            <div class="format-ref-table">
+              <table cellspacing="0" cellpadding="0">
+                <thead>
+                  <tr>
+                    <th data-translate="settings.timestamp.format_ref.col.format"></th>
+                    <th data-translate="settings.timestamp.format_ref.col.desc"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>%Y</td><td data-translate="settings.timestamp.format_ref.pct_Y"></td></tr>
+                  <tr><td>%y</td><td data-translate="settings.timestamp.format_ref.pct_y"></td></tr>
+                  <tr><td>%m</td><td data-translate="settings.timestamp.format_ref.pct_m"></td></tr>
+                  <tr><td>%B</td><td data-translate="settings.timestamp.format_ref.pct_B"></td></tr>
+                  <tr><td>%b</td><td data-translate="settings.timestamp.format_ref.pct_b"></td></tr>
+                  <tr><td>%d</td><td data-translate="settings.timestamp.format_ref.pct_d"></td></tr>
+                  <tr><td>%e</td><td data-translate="settings.timestamp.format_ref.pct_e"></td></tr>
+                  <tr><td>%j</td><td data-translate="settings.timestamp.format_ref.pct_j"></td></tr>
+                  <tr><td>%A</td><td data-translate="settings.timestamp.format_ref.pct_A"></td></tr>
+                  <tr><td>%a</td><td data-translate="settings.timestamp.format_ref.pct_a"></td></tr>
+                  <tr><td>%w</td><td data-translate="settings.timestamp.format_ref.pct_w"></td></tr>
+                  <tr><td>%F</td><td data-translate="settings.timestamp.format_ref.pct_F"></td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
 
@@ -386,6 +409,96 @@
           </div>
         </section>
 
+        <!-- Scale -->
+        <section class="settings-section" id="section-scale">
+          <h2 class="section-title" data-translate="settings.scale.title"></h2>
+          <p class="section-desc" data-translate="settings.scale.desc"></p>
+
+          <h3 class="subsection-title" data-translate="settings.scale.subtitle.global"></h3>
+          <div class="setting-group">
+            <div class="setting-row setting-row--column">
+              <div class="setting-label">
+                <span data-translate="settings.scale.global.title"></span>
+                <span class="setting-desc" data-translate="settings.scale.global.desc"></span>
+              </div>
+              <div class="slider-row">
+                <input type="range" id="uiScale" min="0.5" max="2.0" step="0.1">
+                <span class="slider-value" id="uiScale-label">1.0</span>
+              </div>
+            </div>
+          </div>
+
+          <h3 class="subsection-title" data-translate="settings.scale.subtitle.individual"></h3>
+          <div class="setting-group">
+            <div class="setting-row setting-row--column">
+              <div class="setting-label">
+                <span data-translate="settings.scale.clock.title"></span>
+                <span class="setting-desc" data-translate="settings.scale.clock.desc"></span>
+              </div>
+              <div class="slider-row">
+                <input type="range" id="scaleClock" min="0.5" max="2.0" step="0.1">
+                <span class="slider-value" id="scaleClock-label">1.0</span>
+              </div>
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row setting-row--column">
+              <div class="setting-label">
+                <span data-translate="settings.scale.date.title"></span>
+                <span class="setting-desc" data-translate="settings.scale.date.desc"></span>
+              </div>
+              <div class="slider-row">
+                <input type="range" id="scaleDate" min="0.5" max="2.0" step="0.1">
+                <span class="slider-value" id="scaleDate-label">1.0</span>
+              </div>
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row setting-row--column">
+              <div class="setting-label">
+                <span data-translate="settings.scale.searchbar.title"></span>
+                <span class="setting-desc" data-translate="settings.scale.searchbar.desc"></span>
+              </div>
+              <div class="slider-row">
+                <input type="range" id="scaleSearchbar" min="0.5" max="2.0" step="0.1">
+                <span class="slider-value" id="scaleSearchbar-label">1.0</span>
+              </div>
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row setting-row--column">
+              <div class="setting-label">
+                <span data-translate="settings.scale.weather.title"></span>
+                <span class="setting-desc" data-translate="settings.scale.weather.desc"></span>
+              </div>
+              <div class="slider-row">
+                <input type="range" id="scaleWeather" min="0.5" max="2.0" step="0.1">
+                <span class="slider-value" id="scaleWeather-label">1.0</span>
+              </div>
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row setting-row--column">
+              <div class="setting-label">
+                <span data-translate="settings.scale.bookmarks.title"></span>
+                <span class="setting-desc" data-translate="settings.scale.bookmarks.desc"></span>
+              </div>
+              <div class="slider-row">
+                <input type="range" id="scaleBookmarks" min="0.5" max="2.0" step="0.1">
+                <span class="slider-value" id="scaleBookmarks-label">1.0</span>
+              </div>
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row setting-row--column">
+              <div class="setting-label">
+                <span data-translate="settings.scale.icon.title"></span>
+                <span class="setting-desc" data-translate="settings.scale.icon.desc"></span>
+              </div>
+              <div class="slider-row">
+                <input type="range" id="scaleIcon" min="0.5" max="2.0" step="0.1">
+                <span class="slider-value" id="scaleIcon-label">1.0</span>
+              </div>
+            </div>
+          </div>
+          <button id="reset-individual-scales" class="error-bg" data-translate="settings.scale.reset_btn"></button>
+        </section>
+
         <!-- Accessibility -->
         <section class="settings-section" id="section-accessibility">
           <h2 class="section-title" data-translate="settings.accessibility.title"></h2>
@@ -397,17 +510,6 @@
                 <span data-translate="settings.accessibility.disable_text_shadow.title"></span>
               </div>
               <input type="checkbox" id="disableTextShadow">
-            </div>
-            <div class="setting-divider"></div>
-            <div class="setting-row setting-row--column">
-              <div class="setting-label">
-                <span data-translate="settings.accessibility.ui_scale.title"></span>
-                <span class="setting-desc" data-translate="settings.accessibility.ui_scale.desc"></span>
-              </div>
-              <div class="slider-row">
-                <input type="range" id="uiScale" min="0.5" max="1.5" step="0.1">
-                <span class="slider-value" id="uiScale-label">1.0</span>
-              </div>
             </div>
           </div>
         </section>

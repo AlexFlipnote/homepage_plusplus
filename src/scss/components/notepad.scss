@@ -21,7 +21,7 @@ $notepad-collapse-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   position: absolute;
   right: 1.5rem;
   top: 1.5rem;
-  transform: scale(var(--ui-scale));
+  transform: scale(var(--ui-scale-icon));
   transform-origin: top right;
   transition: width .2s ease, height .2s ease;
   width: $notepad-icon-size;
