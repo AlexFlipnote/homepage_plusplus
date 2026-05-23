@@ -7,6 +7,7 @@
   "search.placeholder": "Søk på nettet...",
   "demo.weather.location": "Plassholder",
   "demo.weather.condition": "Solholder",
+  "demo.install.title": "Installer utvidelse",
   "demo.install": "Legg til i {browser}",
   "time.format.default": "%H:%M:%S",
   "time.format.default_12h": "%I:%M:%S %p",

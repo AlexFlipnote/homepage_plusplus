@@ -7,6 +7,7 @@
   "search.placeholder": "Buscar en la web...",
   "demo.weather.location": "Marcador de posición",
   "demo.weather.condition": "Marcador de sol",
+  "demo.install.title": "Instalar extensión",
   "demo.install": "Añadir a {browser}",
   "time.format.default": "%H:%M:%S",
   "time.format.default_12h": "%I:%M:%S %p",

@@ -5,6 +5,7 @@
   "search.placeholder": "Sök på webben...",
   "demo.weather.location": "Platshållare",
   "demo.weather.condition": "Solhållare",
+  "demo.install.title": "Installera tillägg",
   "demo.install": "Lägg till i {browser}",
   "time.format.default": "%H:%M:%S",
   "time.format.default_12h": "%I:%M:%S %p",

@@ -758,19 +758,10 @@ if (isExtension) {
 
   // Add a nice install button
   function downloadButton(language=undefined) {
-    let browser = "Chrome"
-    let link = "https://chromewebstore.google.com/detail/npagigfpfilcemncemkphndcaigegcbk"
-
-    if (isFirefox) {
-      browser = "Firefox"
-      link = "https://addons.mozilla.org/addon/alexflipnote-homepage/"
-    }
-
-    const addbutton = document.getElementById("install-button")
-    addbutton.style.display = "block"
-    addbutton.innerText = translate(language, "demo.install", {browser: browser})
-    addbutton.href = link
-    if (link === "#") addbutton.onclick = () => { return false }
+    document.getElementById("install-box").style.display = "flex"
+    document.getElementById("install-box-title").innerText = translate(language, "demo.install.title")
+    document.getElementById("install-button-chrome").innerText = translate(language, "demo.install", {browser: "Chrome/Edge"})
+    document.getElementById("install-button-firefox").innerText = translate(language, "demo.install", {browser: "Firefox"})
   }
 
   downloadButton()

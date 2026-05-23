@@ -5,6 +5,7 @@
   "search.placeholder": "Rechercher sur le web...",
   "demo.weather.location": "Emplacement",
   "demo.weather.condition": "Sunholder",
+  "demo.install.title": "Installer l'extension",
   "demo.install": "Ajouter à {browser}",
   "time.format.default": "%H:%M:%S",
   "time.format.default_12h": "%I:%M:%S %p",
