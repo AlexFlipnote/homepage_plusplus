@@ -1,6 +1,8 @@
 $gear-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M15.95 10.78c.03-.25.05-.51.05-.78s-.02-.53-.06-.78l1.69-1.32c.15-.12.19-.34.1-.51l-1.6-2.77c-.1-.18-.31-.24-.49-.18l-1.99.8c-.42-.32-.86-.58-1.35-.78L12 2.34c-.03-.2-.2-.34-.4-.34H8.4c-.2 0-.36.14-.39.34l-.3 2.12c-.49.2-.94.47-1.35.78l-1.99-.8c-.18-.07-.39 0-.49.18l-1.6 2.77c-.1.18-.06.39.1.51l1.69 1.32c-.04.25-.07.52-.07.78s.02.53.06.78L2.37 12.1c-.15.12-.19.34-.1.51l1.6 2.77c.1.18.31.24.49.18l1.99-.8c.42.32.86.58 1.35.78l.3 2.12c.04.2.2.34.4.34h3.2c.2 0 .37-.14.39-.34l.3-2.12c.49-.2.94-.47 1.35-.78l1.99.8c.18.07.39 0 .49-.18l1.6-2.77c.1-.18.06-.39-.1-.51l-1.67-1.32zM10 13c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3z'/%3E%3C/svg%3E");
 
 #demo-panel {
+  --secondary: rgba(255, 255, 255, .07);
+
   backdrop-filter: var(--blur-amount-ui);
   color: #fff !important;
   background-color: rgba(20, 20, 20, .85);
@@ -9,8 +11,9 @@ $gear-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: .1rem;
   overflow-y: auto;
+
+  > * { flex-shrink: 0; }
   padding: 1.5rem 1.25rem 5rem;
   position: fixed;
   right: 0;
@@ -19,15 +22,13 @@ $gear-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
   transition: transform .3s ease-in-out;
   width: 33vw;
   min-width: 280px;
+  max-width: 450px;
   z-index: 99999999999;
 
-  .demo-panel-close, select, select option {
-    color: #fff !important;
-  }
-
-  input[type=checkbox]:before {
-    background-color: #fff !important;
-  }
+  // Prevent the colour demo to overwrite the text inside the demo panel
+  select, .section-title { color: #fff !important; }
+  select option { color: #000 !important; }
+  input[type=checkbox]:before { background-color: #fff !important; }
 
   &::-webkit-scrollbar { width: .35rem; }
   &::-webkit-scrollbar-track { background: transparent; }
@@ -58,7 +59,7 @@ $gear-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
     }
   }
 
-  h2 {
+  .section-title {
     font-size: .7rem;
     font-weight: bold;
     letter-spacing: .1em;
@@ -67,27 +68,15 @@ $gear-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
     text-transform: uppercase;
   }
 
-  label {
-    background: transparent;
-    font-weight: normal;
-    margin: .1rem 0;
-    padding: 0;
+  .setting-group {
+    margin-bottom: 1rem;
+  }
 
-    span[data-translate]:first-child {
-      flex-shrink: 0;
-      width: 7.5rem;
-    }
-
-    input:not([type="checkbox"]), select {
-      box-sizing: border-box;
-      flex: 1;
-      min-width: 0;
-      width: 0;
-    }
+  .setting-row {
+    padding: .7rem .9rem;
   }
 
   .colour-hex-input {
-    width: inherit !important;
     color: #fff !important;
   }
 }

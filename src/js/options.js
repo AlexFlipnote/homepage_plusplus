@@ -319,6 +319,13 @@ function restoreOptions() {
       document.getElementById("row-clock-tumbler").classList.toggle("setting-row--disabled", isSwiss)
       document.getElementById("row-time-12h").classList.toggle("setting-row--disabled", !isDigital)
       document.getElementById("group-fmt-time").classList.toggle("setting-group--disabled", !isDigital)
+      if (!isDigital) {
+        const t12h = document.getElementById("time_12h")
+        if (t12h.checked) {
+          t12h.checked = false
+          fmtTime.placeholder = translate(items.language, "time.format.default")
+        }
+      }
     }
 
     const clockStyle = document.getElementById("clock_style")
@@ -336,6 +343,10 @@ function restoreOptions() {
     const time12h = document.getElementById("time_12h")
     time12h.checked = items.time_12h
     time12h.onchange = () => {
+      if (time12h.checked && parseInt(clockStyle.value) !== 0) {
+        clockStyle.value = "0"
+        syncClockStyleUI(0)
+      }
       fmtTime.placeholder = translate(items.language, time12h.checked ? "time.format.default_12h" : "time.format.default")
       saveOptions(`12h clock set: ${time12h.checked}`, time12h.checked ? "add" : "remove")
     }
@@ -814,6 +825,7 @@ if (document.getElementById("settings-notification")) {
   }
 
   document.addEventListener("DOMContentLoaded", restoreOptions)
+
   document.getElementById("custombg_prune").addEventListener("click", custombgPrune)
 
   document.getElementById("export-settings").addEventListener("click", exportSettings)

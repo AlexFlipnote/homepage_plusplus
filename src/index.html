@@ -107,91 +107,116 @@
     <!-- Demo Panel -->
     <aside id="demo-panel" style="display: none;">
       <button class="demo-panel-close" aria-label="Close demo settings">✕</button>
-      <h2 data-translate="settings.nav.section.timestamp"></h2>
-      <label>
-        <span data-translate="settings.timestamp.clock_style.title"></span>
-        <select id="clockStyle">
-          <option value="digital">Digital</option>
-          <option value="analog">Analog (Swiss)</option>
-          <option value="hex">Hex color</option>
-          <option value="unix">Unix Timestamp</option>
-        </select>
-      </label>
-      <label>
-        <input type="checkbox" id="tumblerToggle">
-        <span data-translate="settings.timestamp.clock_tumbler.title"></span>
-      </label>
-      <label class="default" id="clockFormatLabel">
-        <span data-translate="settings.timestamp.time_format.title"></span>
-        <input type="text" id="changeClock" placeholder="%H:%M:%S">
-      </label>
-      <label>
-        <span data-translate="settings.timestamp.date_format.title"></span>
-        <input type="text" id="changeDate" placeholder="%e. %B %Y">
-      </label>
-      <label>
-        <input type="checkbox" id="time12hToggle">
-        <span data-translate="settings.timestamp.time_12h.title"></span>
-      </label>
-      <label>
-        <input type="checkbox" id="timeToggle" checked>
-        <span data-translate="settings.general.show_time.title"></span>
-      </label>
-      <label>
-        <input type="checkbox" id="dateToggle" checked>
-        <span data-translate="settings.general.show_date.title"></span>
-      </label>
 
-      <h2 data-translate="settings.nav.category.appearance"></h2>
-      <label>
-        <span data-translate="settings.general.language.title"></span>
-        <select id="language">
-          <option value="">Default: English (United Kingdom)</option>
-        </select>
-      </label>
-      <label>
-        <span data-translate="settings.background.url.title"></span>
-        <input type="text" id="changebg" placeholder="https://">
-      </label>
-      <label>
-        <span data-translate="settings.font.font_name.title"></span>
-        <input type="text" id="changefont" placeholder="Times New Roman">
-      </label>
+      <h2 class="section-title" data-translate="settings.nav.section.timestamp"></h2>
 
-      <label>
-        <span data-translate="settings.colours.title"></span>
-        <div class="colour-picker-widget">
-          <button class="colour-swatch" type="button"></button>
-          <input type="text" class="colour-hex-input" maxlength="7" spellcheck="false">
-          <input type="color" id="demoColourGlobal" class="colour-hidden">
+      <div class="setting-group">
+        <div class="setting-row setting-row--column">
+          <span data-translate="settings.timestamp.clock_style.title"></span>
+          <select id="clockStyle">
+            <option value="digital">Digital</option>
+            <option value="analog">Analog (Swiss)</option>
+            <option value="hex">Hex color</option>
+            <option value="unix">Unix Timestamp</option>
+          </select>
         </div>
-      </label>
-
-      <label>
-        <span data-translate="settings.scale.global.title"></span>
-        <div class="slider-row">
-          <input type="range" id="demoUiScale" min="0.5" max="2.0" step="0.1" value="1.0">
-          <span id="demoUiScale-label">1.0</span>
+        <div class="setting-divider"></div>
+        <div class="setting-row" id="demo-row-clock-tumbler">
+          <span data-translate="settings.timestamp.clock_tumbler.title"></span>
+          <input type="checkbox" id="tumblerToggle">
         </div>
-      </label>
+        <div class="setting-divider"></div>
+        <div class="setting-row" id="demo-row-time-12h">
+          <span data-translate="settings.timestamp.time_12h.title"></span>
+          <input type="checkbox" id="time12hToggle">
+        </div>
+      </div>
 
-      <h2 data-translate="settings.nav.category.features"></h2>
-      <label>
-        <input type="checkbox" id="searchToggle">
-        <span data-translate="settings.general.searchbar.title"></span>
-      </label>
-      <label>
-        <input type="checkbox" id="weather">
-        <span data-translate="settings.weather.enable.title"></span>
-      </label>
-      <label>
-        <input type="checkbox" id="bookmarksToggle">
-        <span data-translate="settings.bookmarks.title"></span>
-      </label>
-      <label>
-        <input type="checkbox" id="notepadToggle">
-        <span data-translate="settings.notepad.enable.title"></span>
-      </label>
+      <div class="setting-group" id="demo-group-fmt">
+        <div class="setting-row setting-row--column">
+          <span data-translate="settings.timestamp.time_format.title"></span>
+          <input type="text" id="changeClock" placeholder="%H:%M:%S">
+        </div>
+        <div class="setting-divider"></div>
+        <div class="setting-row setting-row--column">
+          <span data-translate="settings.timestamp.date_format.title"></span>
+          <input type="text" id="changeDate" placeholder="%e. %B %Y">
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-row">
+          <span data-translate="settings.general.show_time.title"></span>
+          <input type="checkbox" id="timeToggle" checked>
+        </div>
+        <div class="setting-divider"></div>
+        <div class="setting-row">
+          <span data-translate="settings.general.show_date.title"></span>
+          <input type="checkbox" id="dateToggle" checked>
+        </div>
+      </div>
+
+      <h2 class="section-title" data-translate="settings.nav.category.appearance"></h2>
+
+      <div class="setting-group">
+        <div class="setting-row setting-row--column">
+          <span data-translate="settings.general.language.title"></span>
+          <select id="language">
+            <option value="">Default: English (United Kingdom)</option>
+          </select>
+        </div>
+        <div class="setting-divider"></div>
+        <div class="setting-row setting-row--column">
+          <span data-translate="settings.background.url.title"></span>
+          <input type="text" id="changebg" placeholder="https://">
+        </div>
+        <div class="setting-divider"></div>
+        <div class="setting-row setting-row--column">
+          <span data-translate="settings.font.font_name.title"></span>
+          <input type="text" id="changefont" placeholder="Times New Roman">
+        </div>
+        <div class="setting-divider"></div>
+        <div class="setting-row">
+          <span data-translate="settings.colours.title"></span>
+          <div class="colour-picker-widget">
+            <button class="colour-swatch" type="button"></button>
+            <input type="text" class="colour-hex-input" maxlength="7" spellcheck="false">
+            <input type="color" id="demoColourGlobal" class="colour-hidden">
+          </div>
+        </div>
+        <div class="setting-divider"></div>
+        <div class="setting-row setting-row--column">
+          <span data-translate="settings.scale.global.title"></span>
+          <div class="slider-row">
+            <input type="range" id="demoUiScale" min="0.5" max="2.0" step="0.1" value="1.0">
+            <span id="demoUiScale-label">1.0</span>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="section-title" data-translate="settings.nav.category.features"></h2>
+
+      <div class="setting-group">
+        <div class="setting-row">
+          <span data-translate="settings.general.searchbar.title"></span>
+          <input type="checkbox" id="searchToggle">
+        </div>
+        <div class="setting-divider"></div>
+        <div class="setting-row">
+          <span data-translate="settings.weather.enable.title"></span>
+          <input type="checkbox" id="weather">
+        </div>
+        <div class="setting-divider"></div>
+        <div class="setting-row">
+          <span data-translate="settings.bookmarks.title"></span>
+          <input type="checkbox" id="bookmarksToggle">
+        </div>
+        <div class="setting-divider"></div>
+        <div class="setting-row">
+          <span data-translate="settings.notepad.enable.title"></span>
+          <input type="checkbox" id="notepadToggle">
+        </div>
+      </div>
     </aside>
 
     <!-- Demo Panel Toggle -->

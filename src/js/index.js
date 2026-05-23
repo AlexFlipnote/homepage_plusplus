@@ -448,7 +448,20 @@ if (isExtension) {
     }
   }
 
-  const clockFormatLabel = document.getElementById("clockFormatLabel")
+  function syncDemoClockUI(style) {
+    const isAnalog = style === "analog"
+    const isDigital = style === "digital"
+    document.getElementById("demo-row-clock-tumbler").classList.toggle("setting-row--disabled", isAnalog)
+    document.getElementById("demo-row-time-12h").classList.toggle("setting-row--disabled", !isDigital)
+    document.getElementById("demo-group-fmt").classList.toggle("setting-group--disabled", !isDigital)
+    if (!isDigital) {
+      const t12h = document.getElementById("time12hToggle")
+      if (t12h.checked) {
+        t12h.checked = false
+        demo12h = false
+      }
+    }
+  }
 
   function switchClockStyle(style) {
     timeClock.stop()
@@ -461,7 +474,6 @@ if (isExtension) {
     switch (style) {
     case "analog":
       timeClock = new AnalogClock("time")
-      clockFormatLabel.style.display = "none"
       break
     case "hex": {
       const timeEl = document.getElementById("time")
@@ -474,25 +486,24 @@ if (isExtension) {
           return hex
         })
         : new HexClock("time", { color: true, text: true })
-      clockFormatLabel.style.display = "none"
       break
     }
     case "unix":
       timeClock = useTumbler
         ? new TumblerClock("time", () => String(Math.floor(Date.now() / 1000)))
         : new UnixClock("time")
-      clockFormatLabel.style.display = "none"
       break
     default:
       timeClock = useTumbler ? new TumblerClock("time", fmt) : new Clock("time", fmt)
-      clockFormatLabel.style.display = ""
     }
 
     timeClock.start()
   }
 
   document.getElementById("clockStyle").onchange = (e) => {
-    switchClockStyle(e.target.value)
+    const style = e.target.value
+    syncDemoClockUI(style)
+    switchClockStyle(style)
   }
 
   document.getElementById("tumblerToggle").onclick = function() {
@@ -500,6 +511,12 @@ if (isExtension) {
   }
 
   document.getElementById("time12hToggle").onclick = function() {
+    const currentStyle = document.getElementById("clockStyle").value
+    if (this.checked && currentStyle !== "digital") {
+      document.getElementById("clockStyle").value = "digital"
+      syncDemoClockUI("digital")
+      switchClockStyle("digital")
+    }
     demo12h = this.checked
     const customFmt = document.getElementById("changeClock").value
     if (!customFmt && timeClock.changeFormat) {
