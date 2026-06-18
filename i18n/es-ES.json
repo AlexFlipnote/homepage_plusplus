@@ -91,7 +91,6 @@
   "weather.snowandthunder": "Nieve y tormenta",
   "weather.snowshowers": "Chubascos de nieve",
   "weather.snowshowersandthunder": "Chubascos de nieve y tormenta",
-  "notepad.placeholder": "Escribe algunas notas...",
   "settings.nav.category.general": "General",
   "settings.nav.category.appearance": "Apariencia",
   "settings.nav.category.features": "Funciones",
@@ -252,5 +251,8 @@
   "settings.backup.export.btn": "Exportar",
   "settings.backup.import.title": "Importar configuración",
   "settings.backup.import.desc": "Restaurar configuración desde un archivo JSON",
-  "settings.backup.import.btn": "Importar"
+  "settings.backup.import.btn": "Importar",
+  "notepad.placeholder": "Escribe algunas notas...",
+  "notepad.tab.default_title": "Nota {n}",
+  "notepad.window_title": "Bloc de notas"
 }

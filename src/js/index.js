@@ -4,6 +4,7 @@ import { getWeather } from "./utils/weather.js"
 import { HexClock, Clock, TumblerClock, AnalogClock, UnixClock, CLOCK_STYLE } from "./utils/timeManager.js"
 import { availableLanguages, setLocale, translate, getLocale } from "./utils/i18n.js"
 import { runMigrations } from "./utils/migrate.js"
+import { createNotepadCore } from "./utils/notepad.js"
 
 const DEFAULT = {
   backgroundImagesCount: 31
@@ -73,7 +74,7 @@ if (isExtension) {
   console.log(`☑️ Running in extension mode (v${getVersion()})`)
   runMigrations()
 
-  const runtimeOnlyKeys = ["notepadContent", "notepadOpen", "notepadWidth", "notepadHeight"]
+  const runtimeOnlyKeys = ["notepadTabs", "notepadActiveTab", "notepadOpen", "notepadWidth", "notepadHeight"]
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local") return
     const hasSettingChange = Object.keys(changes).some(k => k in extensionSettings && !runtimeOnlyKeys.includes(k))
@@ -298,6 +299,9 @@ if (isExtension) {
       const notepadText = document.getElementById("notepad-text")
       const notepadClose = notepadEl.querySelector(".notepad-close")
       const notepadResize = notepadEl.querySelector(".notepad-resize")
+      const tabsBar = notepadEl.querySelector(".notepad-tabs-bar")
+      const tabAddBtn = notepadEl.querySelector(".notepad-tab-add")
+      const popoutBtn = notepadEl.querySelector(".notepad-popout")
 
       const updateScrollbarState = () => {
         notepadEl.classList.toggle("scrollbar-visible", notepadText.scrollHeight > notepadText.clientHeight)
@@ -310,14 +314,16 @@ if (isExtension) {
       notepadEl.style.setProperty("--notepad-width", `${notepadWidth}px`)
       notepadEl.style.setProperty("--notepad-height", `${notepadHeight}px`)
 
-      if (items.notepadContent) {
-        notepadText.value = items.notepadContent
-      }
       notepadText.placeholder = translate(items.language, "notepad.placeholder")
 
-      if (items.notepadOpen) {
-        notepadEl.classList.add("open")
-        requestAnimationFrame(updateScrollbarState)
+      const notepadPadding = () => 1.5 * parseFloat(getComputedStyle(document.documentElement).fontSize)
+      const maxNotepadWidth = () => window.innerWidth - notepadPadding() * 2
+      const maxNotepadHeight = () => window.innerHeight - notepadPadding() * 2
+
+      const applyNotepadSize = () => {
+        notepadEl.style.setProperty("--notepad-width", `${notepadWidth}px`)
+        notepadEl.style.setProperty("--notepad-height", `${notepadHeight}px`)
+        updateScrollbarState()
       }
 
       const clampNotepadSize = () => {
@@ -331,19 +337,84 @@ if (isExtension) {
         }
       }
 
-      notepadEl.addEventListener("click", () => {
-        if (!notepadEl.classList.contains("open")) {
-          notepadText.style.overflowY = "hidden"
-          notepadEl.classList.add("open")
-          chrome.storage.local.set({ notepadOpen: true })
-          clampNotepadSize()
-          notepadEl.addEventListener("transitionend", () => {
-            notepadText.style.overflowY = ""
-            updateScrollbarState()
-            notepadText.focus()
-          }, { once: true })
-        }
+      // --- Tab management ---
+      const core = createNotepadCore(tabsBar, tabAddBtn, notepadText)
+      core.init(items.notepadTabs, items.notepadActiveTab, (tabs, activeTab) => {
+        chrome.storage.local.set({ notepadTabs: tabs, notepadActiveTab: activeTab })
       })
+
+      // Patch textarea input to also update scrollbar state
+      notepadText.addEventListener("input", updateScrollbarState)
+
+      // --- Real-time sync with standalone window ---
+      chrome.storage.onChanged.addListener((changes, area) => {
+        if (area !== "local") return
+        if (!changes.notepadTabs && !changes.notepadActiveTab) return
+        const newTabs = changes.notepadTabs?.newValue ?? core.getTabs()
+        const newActiveTab = changes.notepadActiveTab?.newValue ?? core.getActiveTab()
+        core.onExternalChange(newTabs, newActiveTab)
+        updateScrollbarState()
+      })
+
+      // --- Pop-out window ---
+      let notepadWindowId = null
+
+      function openNotepadWindow() {
+        if (notepadWindowId !== null) {
+          chrome.windows.update(notepadWindowId, { focused: true }, (win) => {
+            if (chrome.runtime.lastError || !win) spawnNotepadWindow()
+          })
+          return
+        }
+        spawnNotepadWindow()
+      }
+
+      function spawnNotepadWindow() {
+        core.flush()
+        chrome.storage.local.set({ notepadTabs: core.getTabs(), notepadActiveTab: core.getActiveTab() })
+        chrome.windows.create({
+          url: chrome.runtime.getURL("notepad.html"),
+          type: "popup",
+          width: Math.max(notepadWidth, 320),
+          height: Math.max(notepadHeight + 40, 200)
+        }, (win) => {
+          notepadWindowId = win.id
+          chrome.windows.onRemoved.addListener(function handler(id) {
+            if (id !== notepadWindowId) return
+            notepadWindowId = null
+            chrome.windows.onRemoved.removeListener(handler)
+          })
+        })
+      }
+
+      popoutBtn.addEventListener("click", (e) => {
+        e.stopPropagation()
+        openNotepadWindow()
+      })
+
+      // --- Open / close ---
+      if (items.notepadInWindow) {
+        notepadEl.addEventListener("click", openNotepadWindow)
+      } else {
+        notepadEl.addEventListener("click", () => {
+          if (!notepadEl.classList.contains("open")) {
+            notepadText.style.overflowY = "hidden"
+            notepadEl.classList.add("open")
+            chrome.storage.local.set({ notepadOpen: true })
+            clampNotepadSize()
+            notepadEl.addEventListener("transitionend", () => {
+              notepadText.style.overflowY = ""
+              updateScrollbarState()
+              notepadText.focus()
+            }, { once: true })
+          }
+        })
+      }
+
+      if (items.notepadOpen && !items.notepadInWindow) {
+        notepadEl.classList.add("open")
+        requestAnimationFrame(updateScrollbarState)
+      }
 
       notepadClose.addEventListener("click", (e) => {
         e.stopPropagation()
@@ -351,25 +422,7 @@ if (isExtension) {
         chrome.storage.local.set({ notepadOpen: false })
       })
 
-      let saveContentTimeout = null
-      notepadText.addEventListener("input", () => {
-        updateScrollbarState()
-        clearTimeout(saveContentTimeout)
-        saveContentTimeout = setTimeout(() => {
-          chrome.storage.local.set({ notepadContent: notepadText.value })
-        }, 500)
-      })
-
-      const notepadPadding = () => 1.5 * parseFloat(getComputedStyle(document.documentElement).fontSize)
-      const maxNotepadWidth = () => window.innerWidth - notepadPadding() * 2
-      const maxNotepadHeight = () => window.innerHeight - notepadPadding() * 2
-
-      const applyNotepadSize = () => {
-        notepadEl.style.setProperty("--notepad-width", `${notepadWidth}px`)
-        notepadEl.style.setProperty("--notepad-height", `${notepadHeight}px`)
-        updateScrollbarState()
-      }
-
+      // --- Resize ---
       let isResizing = false
       let resizeStartX, resizeStartY, resizeStartWidth, resizeStartHeight
 
@@ -387,7 +440,7 @@ if (isExtension) {
         if (!isResizing) return
         const dx = e.clientX - resizeStartX
         const dy = e.clientY - resizeStartY
-        notepadWidth = Math.max(180, Math.min(maxNotepadWidth(), resizeStartWidth - dx))
+        notepadWidth = Math.max(240, Math.min(maxNotepadWidth(), resizeStartWidth - dx))
         notepadHeight = Math.max(100, Math.min(maxNotepadHeight(), resizeStartHeight + dy))
         applyNotepadSize()
       })
@@ -401,7 +454,7 @@ if (isExtension) {
 
       window.addEventListener("resize", clampNotepadSize)
 
-      if (items.notepadOpen) clampNotepadSize()
+      if (items.notepadOpen && !items.notepadInWindow) clampNotepadSize()
     }
   })
 
@@ -637,6 +690,7 @@ if (isExtension) {
   }
 
   // Toggle notepad (demo: no storage, factory new state)
+  let demoNotepadInited = false
   document.getElementById("notepadToggle").onclick = function() {
     const notepadEl = document.getElementById("notepad")
     const notepadText = document.getElementById("notepad-text")
@@ -660,58 +714,69 @@ if (isExtension) {
       notepadEl.classList.toggle("scrollbar-visible", notepadText.scrollHeight > notepadText.clientHeight)
     }
 
-    notepadEl.onclick = () => {
-      if (!notepadEl.classList.contains("open")) {
-        notepadEl.classList.add("open")
-        requestAnimationFrame(updateScrollbarState)
-        setTimeout(() => notepadText.focus(), 200)
+    if (!demoNotepadInited) {
+      demoNotepadInited = true
+
+      const tabsBar = notepadEl.querySelector(".notepad-tabs-bar")
+      const tabAddBtn = notepadEl.querySelector(".notepad-tab-add")
+      const popoutBtn = notepadEl.querySelector(".notepad-popout")
+      const core = createNotepadCore(tabsBar, tabAddBtn, notepadText)
+      core.init([], 0, () => {})
+      notepadText.addEventListener("input", updateScrollbarState)
+
+      popoutBtn.style.display = "none" // no chrome.windows in demo
+
+      notepadEl.onclick = () => {
+        if (!notepadEl.classList.contains("open")) {
+          notepadEl.classList.add("open")
+          requestAnimationFrame(updateScrollbarState)
+          setTimeout(() => notepadText.focus(), 200)
+        }
       }
+
+      notepadClose.onclick = (e) => {
+        e.stopPropagation()
+        notepadEl.classList.remove("open")
+      }
+
+      const notepadPadding = () => 1.5 * parseFloat(getComputedStyle(document.documentElement).fontSize)
+      const maxNotepadWidth = () => window.innerWidth - notepadPadding() * 2
+      const maxNotepadHeight = () => window.innerHeight - notepadPadding() * 2
+
+      const applyNotepadSize = () => {
+        notepadEl.style.setProperty("--notepad-width", `${notepadWidth}px`)
+        notepadEl.style.setProperty("--notepad-height", `${notepadHeight}px`)
+        updateScrollbarState()
+      }
+
+      let isResizing = false
+      let resizeStartX, resizeStartY, resizeStartWidth, resizeStartHeight
+
+      notepadResize.onmousedown = (e) => {
+        isResizing = true
+        resizeStartX = e.clientX
+        resizeStartY = e.clientY
+        resizeStartWidth = notepadWidth
+        resizeStartHeight = notepadHeight
+        notepadEl.classList.add("resizing")
+        e.preventDefault()
+      }
+
+      document.addEventListener("mousemove", (e) => {
+        if (!isResizing) return
+        const dx = e.clientX - resizeStartX
+        const dy = e.clientY - resizeStartY
+        notepadWidth = Math.max(240, Math.min(maxNotepadWidth(), resizeStartWidth - dx))
+        notepadHeight = Math.max(100, Math.min(maxNotepadHeight(), resizeStartHeight + dy))
+        applyNotepadSize()
+      })
+
+      document.addEventListener("mouseup", () => {
+        if (!isResizing) return
+        isResizing = false
+        notepadEl.classList.remove("resizing")
+      })
     }
-
-    notepadClose.onclick = (e) => {
-      e.stopPropagation()
-      notepadEl.classList.remove("open")
-    }
-
-    notepadText.oninput = () => updateScrollbarState()
-
-    const notepadPadding = () => 1.5 * parseFloat(getComputedStyle(document.documentElement).fontSize)
-    const maxNotepadWidth = () => window.innerWidth - notepadPadding() * 2
-    const maxNotepadHeight = () => window.innerHeight - notepadPadding() * 2
-
-    const applyNotepadSize = () => {
-      notepadEl.style.setProperty("--notepad-width", `${notepadWidth}px`)
-      notepadEl.style.setProperty("--notepad-height", `${notepadHeight}px`)
-      updateScrollbarState()
-    }
-
-    let isResizing = false
-    let resizeStartX, resizeStartY, resizeStartWidth, resizeStartHeight
-
-    notepadResize.onmousedown = (e) => {
-      isResizing = true
-      resizeStartX = e.clientX
-      resizeStartY = e.clientY
-      resizeStartWidth = notepadWidth
-      resizeStartHeight = notepadHeight
-      notepadEl.classList.add("resizing")
-      e.preventDefault()
-    }
-
-    document.addEventListener("mousemove", (e) => {
-      if (!isResizing) return
-      const dx = e.clientX - resizeStartX
-      const dy = e.clientY - resizeStartY
-      notepadWidth = Math.max(180, Math.min(maxNotepadWidth(), resizeStartWidth - dx))
-      notepadHeight = Math.max(100, Math.min(maxNotepadHeight(), resizeStartHeight + dy))
-      applyNotepadSize()
-    })
-
-    document.addEventListener("mouseup", () => {
-      if (!isResizing) return
-      isResizing = false
-      notepadEl.classList.remove("resizing")
-    })
   }
 
   // Toggle search bar

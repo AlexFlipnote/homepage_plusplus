@@ -28,7 +28,8 @@ const i18nAutoPlugin = {
 
 const jsBuildConfigs = [
   { entryPoints: ["src/js/index.js"], outfile: "out/js/index.js" },
-  { entryPoints: ["src/js/options.js"], outfile: "out/js/options.js" }
+  { entryPoints: ["src/js/options.js"], outfile: "out/js/options.js" },
+  { entryPoints: ["src/js/notepad.js"], outfile: "out/js/notepad.js" }
 ]
 
 const esbuildOptions = (cfg, overrides = {}) => {

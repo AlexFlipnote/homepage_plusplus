@@ -89,5 +89,7 @@
   "weather.snowandthunder": "Neige et tonnerre",
   "weather.snowshowers": "Averses de neige",
   "weather.snowshowersandthunder": "Averses de neige et tonnerre",
-  "notepad.placeholder": "Écrire des notes..."
+  "notepad.placeholder": "Écrire des notes...",
+  "notepad.tab.default_title": "Note {n}",
+  "notepad.window_title": "Bloc-notes"
 }

@@ -89,5 +89,7 @@
   "weather.snowandthunder": "Neve com trovoada",
   "weather.snowshowers": "Aguaceiros de neve",
   "weather.snowshowersandthunder": "Aguaceiros de neve com trovoada",
-  "notepad.placeholder": "Escreve algumas notas..."
+  "notepad.placeholder": "Escreve algumas notas...",
+  "notepad.tab.default_title": "Nota {n}",
+  "notepad.window_title": "Bloco de notas"
 }

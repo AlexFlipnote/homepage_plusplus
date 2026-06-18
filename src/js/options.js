@@ -37,7 +37,8 @@ export const extensionSettings = {
   notepadEnabled: false,
   notepadInWindow: false,
   notepadOpen: false,
-  notepadContent: "",
+  notepadTabs: [],
+  notepadActiveTab: 0,
   notepadWidth: 300,
   notepadHeight: 220,
   clock_style: 0,
@@ -842,22 +843,8 @@ if (document.getElementById("settings-notification")) {
 }
 
 // This part loads only on window.html
-if (document.getElementById("window-notepad-text")) {
-  chrome.storage.local.get({ notepadInWindow: false, notepadContent: "", language: "" }, (items) => {
+if (document.getElementById("window-settings-btn")) {
+  chrome.storage.local.get({ language: "" }, (items) => {
     applyTranslations(items.language)
-    if (!items.notepadInWindow) return
-    const section = document.getElementById("window-notepad-section")
-    const text = document.getElementById("window-notepad-text")
-    section.style.display = "block"
-    text.value = items.notepadContent
-    text.placeholder = translate(items.language, "notepad.placeholder")
-
-    let saveTimeout = null
-    text.addEventListener("input", () => {
-      clearTimeout(saveTimeout)
-      saveTimeout = setTimeout(() => {
-        chrome.storage.local.set({ notepadContent: text.value })
-      }, 500)
-    })
   })
 }

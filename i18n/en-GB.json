@@ -91,7 +91,6 @@
   "weather.snowandthunder": "Snow and thunder",
   "weather.snowshowers": "Snow showers",
   "weather.snowshowersandthunder": "Snow showers and thunder",
-  "notepad.placeholder": "Write some notes...",
   "settings.nav.category.general": "General",
   "settings.nav.category.appearance": "Appearance",
   "settings.nav.category.features": "Features",
@@ -241,8 +240,8 @@
   "settings.notepad.desc": "A persistent notepad available on the homepage.",
   "settings.notepad.enable.title": "Show notepad",
   "settings.notepad.enable.desc": "Toggle the notepad on the homepage",
-  "settings.notepad.popup.title": "Show notes in popup",
-  "settings.notepad.popup.desc": "Show the notepad in the extension popup, works independently of the toggle above",
+  "settings.notepad.popup.title": "Open as window",
+  "settings.notepad.popup.desc": "Clicking the notepad icon on the homepage opens a separate window instead of expanding inline",
   "settings.customcss.title": "Custom CSS",
   "settings.customcss.desc": "Go wild, make the homepage more personal. You can do whatever you desire.",
   "settings.backup.title": "Backup",
@@ -252,5 +251,8 @@
   "settings.backup.export.btn": "Export",
   "settings.backup.import.title": "Import settings",
   "settings.backup.import.desc": "Restore settings from a JSON file",
-  "settings.backup.import.btn": "Import"
+  "settings.backup.import.btn": "Import",
+  "notepad.placeholder": "Write some notes...",
+  "notepad.tab.default_title": "Note {n}",
+  "notepad.window_title": "Notepad"
 }

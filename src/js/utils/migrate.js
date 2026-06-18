@@ -32,6 +32,16 @@ const migrations = [
 
       return Object.keys(updates).length ? updates : null
     }
+  },
+  {
+    version: "2.7.0",
+    run(items) {
+      if (Array.isArray(items.notepadTabs)) return null
+      return {
+        notepadTabs: [{ content: items.notepadContent || "", colour: "#ffffff", title: "Note 1" }],
+        notepadActiveTab: 0
+      }
+    }
   }
 ]
 
