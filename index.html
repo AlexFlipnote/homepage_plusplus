@@ -94,7 +94,14 @@
     <div id="notepad" style="display: none" role="button" aria-label="Open notepad" tabindex="0">
       <div class="notepad-inner">
         <div class="notepad-header">
-          <button class="notepad-close" title="Collapse notepad" aria-label="Collapse notepad"></button>
+          <div class="notepad-tabs-wrap">
+            <div class="notepad-tabs-bar" role="tablist" aria-label="Note tabs"></div>
+          </div>
+          <div class="notepad-header-actions">
+            <button class="notepad-tab-add" title="Add note" aria-label="Add new note tab"></button>
+            <button class="notepad-popout" title="Open in new window" aria-label="Open notepad in new window"></button>
+            <button class="notepad-close" title="Collapse notepad" aria-label="Collapse notepad"></button>
+          </div>
         </div>
         <textarea id="notepad-text" spellcheck="false"></textarea>
         <div class="notepad-resize" aria-hidden="true"></div>
