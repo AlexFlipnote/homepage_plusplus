@@ -1,18 +1,39 @@
 import { setLocale, translate } from "./utils/i18n.js"
 import { createNotepadCore } from "./utils/notepad.js"
 
+// Prevent Ctrl+W from closing the standalone notepad window
+document.addEventListener("keydown", (e) => {
+  if (e.ctrlKey && (e.key === "w" || e.key === "W")) e.preventDefault()
+}, { capture: true })
+
 const tabsBar = document.querySelector(".notepad-tabs-bar")
 const tabAddBtn = document.querySelector(".notepad-tab-add")
 const notepadText = document.getElementById("notepad-text")
 
-chrome.storage.local.get({ notepadTabs: [], notepadActiveTab: 0, language: "" }, (items) => {
+chrome.storage.local.get({ notepadTabs: [], notepadActiveTab: 0, language: "", notepadFont: "", notepadFontScale: 1.0 }, (items) => {
   setLocale(items.language)
   document.title = translate(items.language, "notepad.window_title")
   notepadText.placeholder = translate(items.language, "notepad.placeholder")
 
+  if (items.notepadFont) {
+    document.documentElement.style.setProperty("--notepad-font-family", `"${items.notepadFont}"`)
+  }
+  if (items.notepadFontScale !== 1.0) {
+    document.documentElement.style.setProperty("--notepad-font-scale", items.notepadFontScale)
+  }
+
   const core = createNotepadCore(tabsBar, tabAddBtn, notepadText)
   core.init(items.notepadTabs, items.notepadActiveTab, (tabs, activeTab) => {
     chrome.storage.local.set({ notepadTabs: tabs, notepadActiveTab: activeTab })
+  })
+
+  // Save popup window size whenever it's resized
+  let resizeTimer = null
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer)
+    resizeTimer = setTimeout(() => {
+      chrome.storage.local.set({ notepadPopupWidth: window.outerWidth, notepadPopupHeight: window.outerHeight })
+    }, 400)
   })
 
   // Real-time sync with the homepage widget

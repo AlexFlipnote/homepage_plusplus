@@ -15,6 +15,11 @@ $notepad-popout-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
 
 $notepad-add-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z'/%3E%3C/svg%3E");
 
+@keyframes notepad-tab-in {
+  from { opacity: 0; transform: scale(0.8) translateX(4px); }
+  to   { opacity: 1; transform: scale(1) translateX(0); }
+}
+
 // Animatable custom properties for the mask fade widths
 @property --np-fade-l {
   syntax: "<length>";
@@ -40,7 +45,6 @@ $notepad-add-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   padding: 0 .5rem 0 .5rem;
 }
 
-// Overflow container — pills fade to transparent at edges via mask
 .notepad-tabs-wrap {
   --np-fade-l: 0rem;
   --np-fade-r: 0rem;
@@ -78,20 +82,18 @@ $notepad-add-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   overflow-x: auto;
   overflow-y: hidden;
   scroll-behavior: smooth;
-  scrollbar-width: none; // hidden — shadows signal overflow instead
+  scrollbar-width: none;
   width: 100%;
 
   &::-webkit-scrollbar { display: none; }
 }
 
-// Bordered floating pill tabs — colour from --tab-colour via color-mix()
 .notepad-tab {
   align-items: center;
   background: color-mix(in srgb, var(--tab-colour, #fff) 10%, transparent);
   border: 1px solid color-mix(in srgb, var(--tab-colour, #fff) 38%, rgba(255, 255, 255, .08));
   border-radius: 100px;
   box-sizing: border-box;
-  color: var(--colour-icon);
   cursor: pointer;
   display: inline-flex;
   flex-shrink: 0;
@@ -131,8 +133,8 @@ $notepad-add-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   }
 
   &.notepad-tab-ghost { opacity: .25; }
+  &.notepad-tab-new   { animation: notepad-tab-in .2s ease; }
 
-  // Out of flow when not editing — no ghost gap
   .notepad-tab-swatch {
     background-color: var(--tab-colour, #ffffff);
     border-radius: 50%;
@@ -191,8 +193,7 @@ $notepad-add-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
     height: .9rem;
     justify-content: center;
     line-height: 1;
-    // Hidden on inactive tabs — animates open on active
-    margin-left: -.25rem; // cancel the flex gap so no phantom space
+    margin-left: -.25rem;
     opacity: 0;
     overflow: hidden;
     padding: 0;
@@ -279,8 +280,8 @@ $notepad-add-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   border: none;
   box-sizing: border-box;
   color: var(--colour-input);
-  font-family: inherit;
-  font-size: .9rem;
+  font-family: var(--notepad-font-family, inherit);
+  font-size: calc(var(--notepad-font-scale, 1) * .9rem);
   line-height: 1.5;
   min-height: 0;
   outline: none;
@@ -300,6 +301,72 @@ $notepad-add-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 
     &:hover { background-color: rgba(255, 255, 255, .35); }
   }
+}
+
+// --- Formatting toolbar ---
+
+.notepad-toolbar {
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, .07);
+  display: flex;
+  flex-shrink: 0;
+  gap: .2rem;
+  justify-content: center;
+  padding: .15rem 0;
+}
+
+.notepad-toolbar-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, .15);
+  border-radius: .25rem;
+  color: var(--colour-icon);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: .72rem;
+  min-width: 1.4rem;
+  opacity: .55;
+  padding: .1rem .3rem;
+  transition: opacity .15s ease, background-color .15s ease;
+
+  &:hover { background-color: rgba(255, 255, 255, .1); opacity: 1; }
+  &:active { box-shadow: none; filter: none; transform: none; }
+  &.active { background-color: rgba(255, 255, 255, .15); opacity: 1; }
+
+  &.fmt-bold      { font-weight: 700; }
+  &.fmt-italic    { font-style: italic; }
+  &.fmt-underline { text-decoration: underline; }
+  &.fmt-strike    { text-decoration: line-through; }
+
+}
+
+// Placeholder for the contenteditable editor
+#notepad-text.is-empty::before {
+  color: var(--colour-placeholder);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+// Inline formatting rendered inside the editor
+#notepad-text {
+  overflow-wrap: break-word;
+  overflow-y: auto;
+  word-break: break-word;
+  cursor: text;
+
+  &::selection, * ::selection {
+    background: color-mix(in srgb, var(--editor-tab-colour, #fff) 38%, transparent);
+    color: inherit;
+  }
+
+  div { white-space: pre-wrap; }
+  // Hide <br> placeholders in non-empty lines (pre-wrap makes them visible otherwise)
+  div br:last-child:not(:only-child) { display: none; }
+
+  b, strong { font-weight: 600; }
+  i, em     { font-style: italic; }
+  del, s    { opacity: .7; }
 }
 
 // --- Widget (#notepad) ---

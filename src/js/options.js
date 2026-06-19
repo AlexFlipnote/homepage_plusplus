@@ -36,11 +36,16 @@ export const extensionSettings = {
   customcss: "",
   notepadEnabled: false,
   notepadInWindow: false,
+  notepadFont: "",
+  notepadFontScale: 1.0,
   notepadOpen: false,
   notepadTabs: [],
   notepadActiveTab: 0,
   notepadWidth: 300,
   notepadHeight: 220,
+  notepadPopupId: null,
+  notepadPopupWidth: null,
+  notepadPopupHeight: null,
   clock_style: 0,
   clock_tumbler: false,
   time_12h: false,
@@ -204,6 +209,8 @@ function saveOptions(message, css="") {
     bookmarks: fetchBookmarkInputs(),
     notepadEnabled: document.getElementById("notepadEnabled").checked,
     notepadInWindow: document.getElementById("notepadInWindow").checked,
+    notepadFont: document.getElementById("notepadFont").value,
+    notepadFontScale: parseFloat(document.getElementById("notepadFontSize").value) || 1.0,
     clock_style: parseInt(document.getElementById("clock_style").value),
     clock_tumbler: document.getElementById("clock_tumbler").checked,
     time_12h: document.getElementById("time_12h").checked,
@@ -398,6 +405,17 @@ function restoreOptions() {
     const notepadInWindow = document.getElementById("notepadInWindow")
     notepadInWindow.checked = items.notepadInWindow
     notepadInWindow.onchange = () => { saveOptions(`Notepad in window set: ${notepadInWindow.checked}`, notepadInWindow.checked ? "add" : "remove") }
+
+    const notepadFont = document.getElementById("notepadFont")
+    notepadFont.value = items.notepadFont
+    notepadFont.onchange = () => { saveOptions(`Notepad font set: ${notepadFont.value || "default"}`, notepadFont.value ? "change" : "remove") }
+
+    const notepadFontSize = document.getElementById("notepadFontSize")
+    const notepadFontSizeLabel = document.getElementById("notepadFontSize-label")
+    notepadFontSize.value = items.notepadFontScale
+    if (notepadFontSizeLabel) notepadFontSizeLabel.textContent = parseFloat(items.notepadFontScale).toFixed(1) + "x"
+    notepadFontSize.oninput = () => { if (notepadFontSizeLabel) notepadFontSizeLabel.textContent = parseFloat(notepadFontSize.value).toFixed(1) + "x" }
+    notepadFontSize.onchange = () => { saveOptions(`Notepad font scale set: ${notepadFontSize.value}`, "change") }
 
     const bookmarksTopSitesEnabled = document.getElementById("bookmarksTopSitesEnabled")
     bookmarksTopSitesEnabled.checked = items.bookmarksTopSitesEnabled

@@ -74,7 +74,7 @@ if (isExtension) {
   console.log(`☑️ Running in extension mode (v${getVersion()})`)
   runMigrations()
 
-  const runtimeOnlyKeys = ["notepadTabs", "notepadActiveTab", "notepadOpen", "notepadWidth", "notepadHeight"]
+  const runtimeOnlyKeys = ["notepadTabs", "notepadActiveTab", "notepadOpen", "notepadWidth", "notepadHeight", "notepadPopupId", "notepadPopupWidth", "notepadPopupHeight"]
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local") return
     const hasSettingChange = Object.keys(changes).some(k => k in extensionSettings && !runtimeOnlyKeys.includes(k))
@@ -316,6 +316,13 @@ if (isExtension) {
 
       notepadText.placeholder = translate(items.language, "notepad.placeholder")
 
+      if (items.notepadFont) {
+        notepadEl.style.setProperty("--notepad-font-family", `"${items.notepadFont}"`)
+      }
+      if (items.notepadFontScale !== 1.0) {
+        notepadEl.style.setProperty("--notepad-font-scale", items.notepadFontScale)
+      }
+
       const notepadPadding = () => 1.5 * parseFloat(getComputedStyle(document.documentElement).fontSize)
       const maxNotepadWidth = () => window.innerWidth - notepadPadding() * 2
       const maxNotepadHeight = () => window.innerHeight - notepadPadding() * 2
@@ -357,12 +364,12 @@ if (isExtension) {
       })
 
       // --- Pop-out window ---
-      let notepadWindowId = null
+      let notepadWindowId = items.notepadPopupId || null
 
       function openNotepadWindow() {
         if (notepadWindowId !== null) {
           chrome.windows.update(notepadWindowId, { focused: true }, (win) => {
-            if (chrome.runtime.lastError || !win) spawnNotepadWindow()
+            if (chrome.runtime.lastError || !win) { notepadWindowId = null; spawnNotepadWindow() }
           })
           return
         }
@@ -372,17 +379,24 @@ if (isExtension) {
       function spawnNotepadWindow() {
         core.flush()
         chrome.storage.local.set({ notepadTabs: core.getTabs(), notepadActiveTab: core.getActiveTab() })
-        chrome.windows.create({
-          url: chrome.runtime.getURL("notepad.html"),
-          type: "popup",
-          width: Math.max(notepadWidth, 320),
-          height: Math.max(notepadHeight + 40, 200)
-        }, (win) => {
-          notepadWindowId = win.id
-          chrome.windows.onRemoved.addListener(function handler(id) {
-            if (id !== notepadWindowId) return
-            notepadWindowId = null
-            chrome.windows.onRemoved.removeListener(handler)
+        chrome.storage.local.get({ notepadPopupWidth: null, notepadPopupHeight: null }, (dims) => {
+          const w = dims.notepadPopupWidth || Math.max(notepadWidth, 320)
+          const h = dims.notepadPopupHeight || Math.max(notepadHeight + 40, 200)
+          chrome.windows.create({
+            url: chrome.runtime.getURL("notepad.html"),
+            type: "popup",
+            width: w,
+            height: h
+          }, (win) => {
+            notepadWindowId = win.id
+            chrome.storage.local.set({ notepadPopupId: win.id })
+
+            chrome.windows.onRemoved.addListener(function handler(id) {
+              if (id !== notepadWindowId) return
+              notepadWindowId = null
+              chrome.storage.local.set({ notepadPopupId: null })
+              chrome.windows.onRemoved.removeListener(handler)
+            })
           })
         })
       }
