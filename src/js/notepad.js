@@ -10,13 +10,22 @@ const tabsBar = document.querySelector(".notepad-tabs-bar")
 const tabAddBtn = document.querySelector(".notepad-tab-add")
 const notepadText = document.getElementById("notepad-text")
 
-chrome.storage.local.get({ notepadTabs: [], notepadActiveTab: 0, language: "", notepadFont: "", notepadFontScale: 1.0 }, (items) => {
+chrome.storage.local.get({ notepadTabs: [], notepadActiveTab: 0, language: "", notepadFont: "", notepadFontScale: 1.0, customfont: "", customfontgoogle: false }, (items) => {
   setLocale(items.language)
   document.title = translate(items.language, "notepad.window_title")
   notepadText.placeholder = translate(items.language, "notepad.placeholder")
 
-  if (items.notepadFont) {
-    document.documentElement.style.setProperty("--notepad-font-family", `"${items.notepadFont}"`)
+  // notepadFont overrides global font; if neither set, inherit from CSS
+  const fontFamily = items.notepadFont || items.customfont
+  if (fontFamily) {
+    document.documentElement.style.setProperty("--notepad-font-family", `"${fontFamily}"`)
+    // Load Google Font for standalone window if needed
+    if (!items.notepadFont && items.customfontgoogle) {
+      const link = document.createElement("link")
+      link.rel = "stylesheet"
+      link.href = `https://fonts.googleapis.com/css?family=${items.customfont.replace(/ /g, "+")}`
+      document.head.appendChild(link)
+    }
   }
   if (items.notepadFontScale !== 1.0) {
     document.documentElement.style.setProperty("--notepad-font-scale", items.notepadFontScale)
@@ -36,9 +45,12 @@ chrome.storage.local.get({ notepadTabs: [], notepadActiveTab: 0, language: "", n
     }, 400)
   })
 
-  // Real-time sync with the homepage widget
+  const settingsKeys = new Set(["notepadFont", "notepadFontScale", "language", "customfont", "customfontgoogle"])
+
+  // Real-time sync with the homepage widget; reload on settings changes
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local") return
+    if (Object.keys(changes).some(k => settingsKeys.has(k))) { location.reload(); return }
     if (!changes.notepadTabs && !changes.notepadActiveTab) return
     const newTabs = changes.notepadTabs?.newValue ?? core.getTabs()
     const newActiveTab = changes.notepadActiveTab?.newValue ?? core.getActiveTab()

@@ -337,6 +337,10 @@ $notepad-add-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   &.fmt-underline { text-decoration: underline; }
   &.fmt-strike    { text-decoration: line-through; }
 
+  &.fmt-table {
+    padding: .1rem .3rem .2rem .3rem;
+    svg { height: .65rem; vertical-align: middle; width: .65rem; }
+  }
 }
 
 // Placeholder for the contenteditable editor
@@ -367,6 +371,59 @@ $notepad-add-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   b, strong { font-weight: 600; }
   i, em     { font-style: italic; }
   del, s    { opacity: .7; }
+
+  table {
+    border-collapse: collapse;
+    margin: .15rem 0;
+
+    td, th {
+      border: 1px solid rgba(255, 255, 255, .2);
+      min-width: 4rem;
+      padding: .2rem .45rem;
+      vertical-align: top;
+      white-space: pre-wrap;
+
+      br:last-child:not(:only-child) { display: none; }
+    }
+  }
+}
+
+// --- Table size picker popup ---
+
+.notepad-table-picker {
+  background-color: var(--blur-background);
+  backdrop-filter: var(--blur-amount-ui);
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: .4rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .35);
+  padding: .45rem;
+  z-index: 234567;
+}
+
+.notepad-table-picker-grid {
+  display: grid;
+  gap: 3px;
+}
+
+.notepad-table-picker-cell {
+  background: rgba(255, 255, 255, .1);
+  border: 1px solid rgba(255, 255, 255, .15);
+  border-radius: 2px;
+  height: 14px;
+  width: 14px;
+  cursor: pointer;
+
+  &.active {
+    background: rgba(255, 255, 255, .35);
+    border-color: rgba(255, 255, 255, .55);
+  }
+}
+
+.notepad-table-picker-label {
+  color: var(--colour-input);
+  font-size: .68rem;
+  margin-top: .35rem;
+  text-align: center;
 }
 
 // --- Widget (#notepad) ---
@@ -384,7 +441,7 @@ $notepad-add-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   transform-origin: top right;
   transition: width .2s ease, height .2s ease;
   width: $notepad-icon-size;
-  z-index: 99999999;
+  z-index: 123456;
 
   &::before {
     background-color: var(--colour-icon);
@@ -487,6 +544,7 @@ body.notepad-window {
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+  background-color: var(--primary);
 
   #notepad-window {
     display: flex;
