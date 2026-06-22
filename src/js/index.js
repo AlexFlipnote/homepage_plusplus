@@ -353,14 +353,18 @@ if (isExtension) {
       // Patch textarea input to also update scrollbar state
       notepadText.addEventListener("input", updateScrollbarState)
 
-      // --- Real-time sync with standalone window ---
-      chrome.storage.onChanged.addListener((changes, area) => {
-        if (area !== "local") return
-        if (!changes.notepadTabs && !changes.notepadActiveTab) return
-        const newTabs = changes.notepadTabs?.newValue ?? core.getTabs()
-        const newActiveTab = changes.notepadActiveTab?.newValue ?? core.getActiveTab()
-        core.onExternalChange(newTabs, newActiveTab)
-        updateScrollbarState()
+      // --- Sync on focus: refresh from storage when notepad gains focus ---
+      let notepadFocused = false
+      notepadEl.addEventListener("focusin", () => {
+        if (notepadFocused) return
+        notepadFocused = true
+        chrome.storage.local.get({ notepadTabs: [], notepadActiveTab: 0 }, (stored) => {
+          core.onExternalChange(stored.notepadTabs, stored.notepadActiveTab)
+          updateScrollbarState()
+        })
+      })
+      notepadEl.addEventListener("focusout", (e) => {
+        if (!notepadEl.contains(e.relatedTarget)) notepadFocused = false
       })
 
       // --- Pop-out window ---

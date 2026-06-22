@@ -47,13 +47,23 @@ chrome.storage.local.get({ notepadTabs: [], notepadActiveTab: 0, language: "", n
 
   const settingsKeys = new Set(["notepadFont", "notepadFontScale", "language", "customfont", "customfontgoogle"])
 
-  // Real-time sync with the homepage widget; reload on settings changes
+  // Reload on settings changes only
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local") return
-    if (Object.keys(changes).some(k => settingsKeys.has(k))) { location.reload(); return }
-    if (!changes.notepadTabs && !changes.notepadActiveTab) return
-    const newTabs = changes.notepadTabs?.newValue ?? core.getTabs()
-    const newActiveTab = changes.notepadActiveTab?.newValue ?? core.getActiveTab()
-    core.onExternalChange(newTabs, newActiveTab)
+    if (Object.keys(changes).some(k => settingsKeys.has(k))) location.reload()
+  })
+
+  // Sync on focus: refresh from storage when popup window is re-focused
+  const notepadRoot = document.getElementById("notepad-window")
+  let popupFocused = false
+  notepadRoot.addEventListener("focusin", () => {
+    if (popupFocused) return
+    popupFocused = true
+    chrome.storage.local.get({ notepadTabs: [], notepadActiveTab: 0 }, (stored) => {
+      core.onExternalChange(stored.notepadTabs, stored.notepadActiveTab)
+    })
+  })
+  notepadRoot.addEventListener("focusout", (e) => {
+    if (!notepadRoot.contains(e.relatedTarget)) popupFocused = false
   })
 })
