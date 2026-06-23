@@ -337,7 +337,10 @@ export function createNotepadCore(tabsBar, tabAddBtn, notepadText) {
 
   function schedSave() {
     clearTimeout(saveTimer)
-    saveTimer = setTimeout(() => saveCallback?.(tabs, activeTab), 100)
+    saveTimer = setTimeout(() => {
+      saveCallback?.(tabs, activeTab)
+      saveTimer = null
+    }, 100)
   }
 
   function flush() {
@@ -808,6 +811,8 @@ export function createNotepadCore(tabsBar, tabAddBtn, notepadText) {
     getActiveTab: () => activeTab,
     onExternalChange(newTabs, newActiveTab) {
       if (!newTabs?.length) return
+      if (saveTimer !== null) return
+      if (tabs[activeTab]) tabs[activeTab].content = editorToMd(editor)
       if (
         JSON.stringify(newTabs) === JSON.stringify(tabs) &&
         newActiveTab === activeTab

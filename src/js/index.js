@@ -407,6 +407,8 @@ if (isExtension) {
 
       popoutBtn.addEventListener("click", (e) => {
         e.stopPropagation()
+        notepadEl.classList.remove("open")
+        chrome.storage.local.set({ notepadOpen: false })
         openNotepadWindow()
       })
 
