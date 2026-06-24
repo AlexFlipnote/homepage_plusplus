@@ -1,4 +1,5 @@
 import { getVersion } from "./browser.js"
+import { bgPut } from "./backgrounds.js"
 
 const MIGRATION_VERSION_KEY = "_migrated_version"
 
@@ -42,6 +43,19 @@ const migrations = [
         notepadActiveTab: 0
       }
     }
+  },
+  {
+    version: "2.7.6",
+    async run(items) {
+      if (!items.custombg?.length) return null
+      for (const dataUrl of items.custombg) {
+        try {
+          const blob = await fetch(dataUrl).then(r => r.blob())
+          await bgPut(blob)
+        } catch (e) { void e }
+      }
+      return { custombg: [] }
+    }
   }
 ]
 
@@ -58,15 +72,15 @@ export function runMigrations() {
       return
     }
 
-    chrome.storage.local.get(null, (items) => {
+    chrome.storage.local.get(null, async (items) => {
       const updates = {}
       for (const migration of pending) {
-        const result = migration.run({ ...items, ...updates })
+        const result = await migration.run({ ...items, ...updates })
         if (result) Object.assign(updates, result)
       }
 
       updates[MIGRATION_VERSION_KEY] = currentVersion
-      chrome.storage.local.set(updates)
+      chrome.storage.local.set(updates, () => location.reload())
     })
   })
 }

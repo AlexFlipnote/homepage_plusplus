@@ -5,6 +5,7 @@ import { HexClock, Clock, TumblerClock, AnalogClock, UnixClock, CLOCK_STYLE } fr
 import { availableLanguages, setLocale, translate, getLocale } from "./utils/i18n.js"
 import { runMigrations } from "./utils/migrate.js"
 import { createNotepadCore } from "./utils/notepad.js"
+import { bgGetAll } from "./utils/backgrounds.js"
 
 const DEFAULT = {
   backgroundImagesCount: 31
@@ -72,6 +73,7 @@ function createBookmark(
 if (isExtension) {
   // Extension mode
   console.log(`☑️ Running in extension mode (v${getVersion()})`)
+  document.body.style.visibility = "hidden"
   runMigrations()
 
   const runtimeOnlyKeys = ["notepadTabs", "notepadActiveTab", "notepadOpen", "notepadWidth", "notepadHeight", "notepadPopupId", "notepadPopupWidth", "notepadPopupHeight"]
@@ -88,7 +90,7 @@ if (isExtension) {
     })
   }
 
-  chrome.storage.local.get({ ...extensionSettings }, function(items) {
+  chrome.storage.local.get({ ...extensionSettings }, async function(items) {
     if (items.animations) {
       document.body.classList.remove("no-animations")
     }
@@ -174,10 +176,10 @@ if (isExtension) {
     const randomBgNum = Math.floor(Math.random() * DEFAULT.backgroundImagesCount)
     let newBackground = `images/backgrounds/background${randomBgNum}.jpg`
 
-    if (items.custombg.length > 0) {
-      newBackground = items.custombg[
-        Math.floor(Math.random() * items.custombg.length)
-      ]
+    const customBgs = await bgGetAll()
+    if (customBgs.length > 0) {
+      const { blob } = customBgs[Math.floor(Math.random() * customBgs.length)]
+      newBackground = URL.createObjectURL(blob)
     }
 
     backgroundElement.onload = () => {
@@ -476,6 +478,8 @@ if (isExtension) {
 
       if (items.notepadOpen && !items.notepadInWindow) clampNotepadSize()
     }
+
+    document.body.style.visibility = "visible"
   })
 
 } else {

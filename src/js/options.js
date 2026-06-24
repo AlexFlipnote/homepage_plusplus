@@ -4,6 +4,7 @@ import { isFirefox, getVersion } from "./utils/browser.js"
 import { WorldMap } from "./utils/openstreetmap.js"
 import { HexClock } from "./utils/timeManager.js"
 import { availableLanguages, translate, translationCoverage } from "./utils/i18n.js"
+import { bgGetAll, bgPut, bgDelete, bgClear } from "./utils/backgrounds.js"
 
 const defaultColour = "#ffffff"
 const defaultColourBlurBg = "#181818"
@@ -13,7 +14,6 @@ export const extensionSettings = {
   searchbar: false,
   animations: false,
   disableTextShadow: false,
-  custombg: [],
   show_time: true,
   show_date: true,
   fmt_time: "",
@@ -154,10 +154,6 @@ function readScale(id) {
 
 // Saves options to chrome.storage
 function saveOptions(message, css="") {
-  const custombg = []
-  const custombgPreviews = document.getElementsByClassName("preview-image")
-  for (var i = 0; i < custombgPreviews.length; i++) { custombg.push(custombgPreviews[i].src) }
-
   function fetchBookmarkInputs() {
     const blist = document.getElementById("blist")
     const bookmarkItems = blist.getElementsByClassName("bookmark-item")
@@ -184,7 +180,6 @@ function saveOptions(message, css="") {
   chrome.storage.local.set({
     language: document.getElementById("language").value,
     animations: document.getElementById("animations").checked,
-    custombg: custombg,
     show_time: document.getElementById("show_time").checked,
     show_date: document.getElementById("show_date").checked,
     fmt_time: document.getElementById("fmt_time").value,
@@ -261,7 +256,7 @@ function createMapInit(items) {
 // Restores select box and checkbox state using the preferences
 // stored in chrome.storage.
 function restoreOptions() {
-  chrome.storage.local.get({ ...extensionSettings }, (items) => {
+  chrome.storage.local.get({ ...extensionSettings }, async (items) => {
     const language = document.getElementById("language")
     language.value = items.language
     language.onchange = () => {
@@ -585,8 +580,9 @@ function restoreOptions() {
     })
 
     const allPreviews = document.getElementById("custombg_previews")
-    for (var i = 0; i < items.custombg.length; i++) {
-      createPreview(items.custombg[i], allPreviews)
+    const existingBgs = await bgGetAll()
+    for (const { id, blob } of existingBgs) {
+      createPreview(URL.createObjectURL(blob), id, allPreviews)
     }
   })
 }
@@ -629,13 +625,14 @@ function createBookmarkElement(bkey, burl) {
   blist.appendChild(container)
 }
 
-function createPreview(image, target) {
+function createPreview(url, id, target) {
   const container = document.createElement("div")
   container.classList.add("preview-container")
 
   const preview = document.createElement("img")
   preview.classList.add("preview-image")
-  preview.src = image
+  preview.src = url
+  preview.dataset.bgId = id
 
   container.append(preview) // div -> img
 
@@ -784,32 +781,19 @@ if (document.getElementById("settings-notification")) {
   })
 
   // CustomBG Appender
-  document.getElementById("custombg_uploader").onchange = () => {
+  document.getElementById("custombg_uploader").onchange = async () => {
     const allPreviews = document.getElementById("custombg_previews")
-
     const files = document.getElementById("custombg_uploader").files
 
     if (!files.length) { return }
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]
-      const reader = new FileReader()
-
-      reader.addEventListener("load", () => {
-        const mbLimit = 1.5
-        const imageSizeMB = (reader.result.length * (3/4)) / (1024 * 1024)
-        if (imageSizeMB > mbLimit) {
-          createAlert(`Image is larger than ${mbLimit}MB and will not be uploaded.`, "remove")
-        } else {
-          createPreview(reader.result, allPreviews)
-          saveOptions("Added background image", "add")
-        }
-      }, false)
-
-      reader.readAsDataURL(file)
+    for (const file of files) {
+      const id = await bgPut(file)
+      createPreview(URL.createObjectURL(file), id, allPreviews)
+      saveOptions("Added background image", "add")
     }
 
-    // When done, reset the input so the same file can be uploaded again if wanted
+    // Reset so the same file can be uploaded again if wanted
     document.getElementById("custombg_uploader").value = ""
   }
 
@@ -824,18 +808,21 @@ if (document.getElementById("settings-notification")) {
   }
 
   // CustomBG Remover
-  document.body.onclick = function (ev) {
-    if (ev.target.getAttribute("class") == "preview-image") {
-      ev.target.remove()
+  document.body.onclick = async function (ev) {
+    if (ev.target.classList.contains("preview-image")) {
+      await bgDelete(Number(ev.target.dataset.bgId))
+      URL.revokeObjectURL(ev.target.src)
+      ev.target.closest(".preview-container").remove()
       saveOptions("Removed background image", "remove")
     }
   }
 
-  function custombgPrune() {
+  async function custombgPrune() {
     const custombgPreviews = document.getElementById("custombg_previews")
     const findCustomBg = custombgPreviews.getElementsByClassName("preview-container")
     if (findCustomBg.length == 0) { return }
 
+    await bgClear()
     while (findCustomBg.length > 0) {
       findCustomBg[0].remove()
     }
