@@ -215,7 +215,7 @@
   "settings.scale.bookmarks.desc": "Reemplaza la escala global para los marcadores (predeterminado: `{default}`)",
   "settings.scale.icon.title": "Iconos",
   "settings.scale.icon.desc": "Reemplaza la escala global para los iconos del bloc de notas y de configuración (predeterminado: `{default}`)",
-  "settings.scale.reset_btn": "Restablecer escalas individuales",
+  "settings.scale.reset_btn": "Restablecer todas las escalas",
   "settings.accessibility.title": "Accesibilidad",
   "settings.accessibility.desc": "Personaliza las opciones de accesibilidad de la extensión",
   "settings.accessibility.disable_text_shadow.title": "Desactivar sombra de texto",

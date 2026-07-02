@@ -215,7 +215,7 @@
   "settings.scale.bookmarks.desc": "Overrides global scale for the bookmarks (default: `{default}`)",
   "settings.scale.icon.title": "Icons",
   "settings.scale.icon.desc": "Overrides global scale for the notepad and settings icons (default: `{default}`)",
-  "settings.scale.reset_btn": "Reset individual scales",
+  "settings.scale.reset_btn": "Reset all scales",
   "settings.accessibility.title": "Accessibility",
   "settings.accessibility.desc": "Customise the accessibility options for the extension",
   "settings.accessibility.disable_text_shadow.title": "Disable text shadow",

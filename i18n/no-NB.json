@@ -215,7 +215,7 @@
   "settings.scale.bookmarks.desc": "Overstyrer global skala for bokmerkene (standard: `{default}`)",
   "settings.scale.icon.title": "Ikoner",
   "settings.scale.icon.desc": "Overstyrer global skala for notatblokk- og innstillingsikoner (standard: `{default}`)",
-  "settings.scale.reset_btn": "Tilbakestill individuelle skalaer",
+  "settings.scale.reset_btn": "Tilbakestill alle skalaer",
   "settings.accessibility.title": "Tilgjengelighet",
   "settings.accessibility.desc": "Tilpass tilgjengelighetsalternativene for utvidelsen",
   "settings.accessibility.disable_text_shadow.title": "Deaktiver tekstskygge",

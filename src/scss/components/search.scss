@@ -12,7 +12,7 @@
 
 #search-form {
   animation: enter-page-search 1s ease-in-out;
-  margin: 0 auto;
+  margin: 1rem auto 0;
   max-width: 50rem;
   position: relative;
   transform: scale(var(--ui-scale-searchbar));

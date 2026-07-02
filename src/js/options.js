@@ -454,14 +454,14 @@ function restoreOptions() {
     const resetIndividualScales = document.getElementById("reset-individual-scales")
     if (resetIndividualScales) {
       resetIndividualScales.onclick = () => {
-        const ids = ["scaleClock", "scaleDate", "scaleSearchbar", "scaleWeather", "scaleBookmarks", "scaleIcon"]
+        const ids = ["uiScale", "scaleClock", "scaleDate", "scaleSearchbar", "scaleWeather", "scaleBookmarks", "scaleIcon"]
         ids.forEach(id => {
           const el = document.getElementById(id)
           const labelEl = document.getElementById(`${id}-label`)
           if (el) el.value = 1.0
           if (labelEl) labelEl.textContent = "1.0"
         })
-        saveOptions("Individual scales reset to global", "change")
+        saveOptions("All scales reset to default", "change")
       }
     }
 

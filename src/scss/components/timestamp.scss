@@ -21,7 +21,7 @@
     color: var(--colour-time);
     transform: scale(var(--ui-scale-clock));
     transform-origin: center center;
-    margin-bottom: calc(5rem * (var(--ui-scale-clock) - 1) / 4);
+    margin-bottom: calc(5rem * (var(--ui-scale-clock) - 1) / 2);
 
     &.analog-clock {
       margin-bottom: calc(9rem * (var(--ui-scale-clock) - 1) / 2);
