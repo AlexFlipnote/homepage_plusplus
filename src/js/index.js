@@ -200,7 +200,7 @@ if (isExtension) {
 
         const refreshWeather = () => {
           console.log("⌛ Refreshing weather automatically")
-          getWeather(items, position, items.language, true)
+          getWeather(items, position, items.language, true).catch(err => console.error("Failed to refresh weather", err))
         }
 
         setTimeout(() => {
@@ -211,13 +211,15 @@ if (isExtension) {
 
       if (items.wManualLocation) {
         weatherPosition = new ManualPosition(items.wlat, items.wlon)
-        getWeather(items, weatherPosition, items.language)
+        getWeather(items, weatherPosition, items.language).catch(err => console.error("Failed to fetch weather", err))
         scheduleWeatherRefresh(weatherPosition)
       } else {
         navigator.geolocation.getCurrentPosition((position) => {
           weatherPosition = position
-          getWeather(items, weatherPosition, items.language)
+          getWeather(items, weatherPosition, items.language).catch(err => console.error("Failed to fetch weather", err))
           scheduleWeatherRefresh(weatherPosition)
+        }, (err) => {
+          console.error("Failed to get geolocation for weather", err)
         })
       }
     }
@@ -239,8 +241,8 @@ if (isExtension) {
       searchInput.placeholder = translate(items.language, "search.placeholder")
       searchForm.style.display = "block"
 
+      const notepadEl = document.getElementById("notepad")
       document.addEventListener("keydown", (e) => {
-        const notepadEl = document.getElementById("notepad")
         if (
           e.key.length === 1 &&
           !e.ctrlKey && !e.metaKey && !e.altKey &&

@@ -13,10 +13,6 @@ export function compileStrftime(fmt) {
   const padSpace2 = n => (n < 10 ? " " + n : "" + n)
 
   const intlCache = {
-    monthLong: new Map(),
-    monthShort: new Map(),
-    weekdayLong: new Map(),
-    weekdayShort: new Map(),
     dayPeriod: new Map()
   }
 
@@ -164,16 +160,17 @@ export class Clock {
     this.format = format
     this.animationFrameId = null
     this._lastTime = null
+    this._compiled = compileStrftime(format)
   }
 
   changeFormat(newFormat) {
     this.format = newFormat
+    this._compiled = compileStrftime(newFormat)
     this._lastTime = null
   }
 
   getTime() {
-    const fmt = compileStrftime(this.format)
-    return fmt(new Date())
+    return this._compiled(new Date())
   }
 
   start() {
@@ -199,10 +196,12 @@ export class TumblerClock {
     this.lastTime = null
     this.slots = []
     this._initialized = false
+    this._compiled = typeof format === "function" ? null : compileStrftime(format)
   }
 
   changeFormat(newFormat) {
     this.format = newFormat
+    this._compiled = typeof newFormat === "function" ? null : compileStrftime(newFormat)
     this._initialized = false
     this.lastTime = null
     this.slots = []
@@ -210,8 +209,7 @@ export class TumblerClock {
 
   getTime() {
     if (typeof this.format === "function") return this.format()
-    const fmt = compileStrftime(this.format)
-    return fmt(new Date())
+    return this._compiled(new Date())
   }
 
   _initSlots(timeStr) {

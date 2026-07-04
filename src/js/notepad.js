@@ -45,6 +45,10 @@ chrome.storage.local.get({ notepadTabs: [], notepadActiveTab: 0, language: "", n
     }, 400)
   })
 
+  // Flush the debounced save immediately when the window closes, otherwise
+  // edits made within the last 100ms (schedSave's debounce) are lost
+  window.addEventListener("pagehide", () => core.flush())
+
   const settingsKeys = new Set(["notepadFont", "notepadFontScale", "language", "customfont", "customfontgoogle"])
 
   // Reload on settings changes only

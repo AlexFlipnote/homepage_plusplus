@@ -243,19 +243,25 @@ export async function getWeather(items, position, lang, skipCache = false) {
     return
   }
 
-  const geoResponse = await reverseGeocode(pos.latitude, pos.longitude)
+  let geoResponse
+  try {
+    geoResponse = await reverseGeocode(pos.latitude, pos.longitude)
+  } catch (err) {
+    console.error("Failed to reverse geocode weather location", err)
+  }
 
   wname.innerText = (
-    geoResponse.address.city || geoResponse.address.town ||
-    geoResponse.address.village || geoResponse.address.hamlet ||
+    geoResponse?.address.city || geoResponse?.address.town ||
+    geoResponse?.address.village || geoResponse?.address.hamlet ||
       "Unknown Location"
   )
   showWeatherContainer()
 
-  cache.set(
-    locationCacheKey, wname.innerText,
-    43200  // 12 hours, street data does not really change..
-  )
-
+  if (geoResponse) {
+    cache.set(
+      locationCacheKey, wname.innerText,
+      43200  // 12 hours, street data does not really change..
+    )
+  }
 }
 
