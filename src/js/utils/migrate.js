@@ -56,6 +56,46 @@ const migrations = [
       }
       return { custombg: [] }
     }
+  },
+  {
+    version: "2.8.0",
+    run(items) {
+      // Flat bookmarks array is now grouped: wrap the legacy list into one default group
+      if (Array.isArray(items.bookmarkGroups)) return null
+      const legacy = Array.isArray(items.bookmarks) ? items.bookmarks : []
+      return { bookmarkGroups: [{ name: "Bookmarks", items: legacy }] }
+    }
+  },
+  {
+    version: "2.8.1",
+    run(items) {
+      // Recovery: the 2.8.0 migration only ran on the new-tab page, so opening Settings
+      // first could persist an empty bookmarkGroups and strand the legacy `bookmarks` key.
+      // Restore those bookmarks if the groups are effectively empty.
+      const legacy = Array.isArray(items.bookmarks) ? items.bookmarks : []
+      if (!legacy.length) return null
+
+      const groups = Array.isArray(items.bookmarkGroups) ? items.bookmarkGroups : []
+      const hasBookmarks = groups.some(g => Array.isArray(g.items) && g.items.length)
+      if (hasBookmarks) return null // groups already hold data, never clobber it
+
+      if (groups.length) {
+        const restored = [...groups]
+        restored[0] = { ...restored[0], items: legacy }
+        return { bookmarkGroups: restored }
+      }
+      return { bookmarkGroups: [{ name: "Bookmarks", items: legacy }] }
+    }
+  },
+  {
+    version: "2.8.2",
+    run(items) {
+      // Mark bookmark migration complete. Once set, bookmarkGroups is authoritative and the
+      // legacy `bookmarks` key is ignored — so deleting all groups sticks instead of the old
+      // list being resurrected by the render fallback.
+      if (items.bookmarksMigrated) return null
+      return { bookmarksMigrated: true }
+    }
   }
 ]
 

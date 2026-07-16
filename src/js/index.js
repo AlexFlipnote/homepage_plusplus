@@ -70,6 +70,13 @@ function createBookmark(
   el.appendChild(container)
 }
 
+function createBookmarkGroup(container) {
+  const group = document.createElement("div")
+  group.className = "bookmark-group"
+  container.appendChild(group)
+  return group
+}
+
 if (isExtension) {
   // Extension mode
   console.log(`☑️ Running in extension mode (v${getVersion()})`)
@@ -225,12 +232,25 @@ if (isExtension) {
     }
 
     const bookmarks = document.getElementById("bookmarks")
+    bookmarks.style.setProperty("--bookmarks-rows-per-group", items.bookmarksRowsPerGroup || 1)
 
-    if (items.bookmarks) {
+    let groups = Array.isArray(items.bookmarkGroups) ? items.bookmarkGroups : []
+    // Only fall back to the legacy flat list before migration has completed; afterwards an
+    // empty bookmarkGroups is a deliberate state and must be respected.
+    if (!items.bookmarksMigrated && !groups.length && Array.isArray(items.bookmarks) && items.bookmarks.length) {
+      groups = [{ name: "Bookmarks", items: items.bookmarks }]
+    }
+
+    const groupEls = []
+    if (groups.length) {
       bookmarks.style.display = "flex"
-      items.bookmarks.forEach(({ name, url }) => {
-        createBookmark(bookmarks, name, url, {
-          bookmarksFavicon: items.bookmarksFavicon
+      groups.forEach(group => {
+        const groupEl = createBookmarkGroup(bookmarks)
+        groupEls.push(groupEl)
+        ;(group.items || []).forEach(({ name, url }) => {
+          createBookmark(groupEl, name, url, {
+            bookmarksFavicon: items.bookmarksFavicon
+          })
         })
       })
     }
@@ -259,8 +279,21 @@ if (isExtension) {
     if (items.bookmarksTopSitesEnabled) {
       bookmarks.style.display = "flex"
       chrome.topSites.get((sites) => {
-        for (const { title, url } of sites.slice(0, items.bookmarksTopSitesAmount)) {
-          createBookmark(bookmarks, title, url, {
+        const top = sites.slice(0, items.bookmarksTopSitesAmount)
+        if (!top.length) return
+
+        let target
+        if (items.bookmarksTopSitesMode === "merge" && groupEls.length) {
+          target = groupEls[Math.min(items.bookmarksTopSitesGroup || 0, groupEls.length - 1)]
+        } else {
+          // Own group, positioned among the user groups
+          target = createBookmarkGroup(bookmarks)
+          const order = Math.min(items.bookmarksTopSitesOrder ?? groupEls.length, groupEls.length)
+          bookmarks.insertBefore(target, groupEls[order] || null)
+        }
+
+        for (const { title, url } of top) {
+          createBookmark(target, title, url, {
             bookmarksFavicon: items.bookmarksFavicon,
             isAuto: true
           })
@@ -512,10 +545,11 @@ if (isExtension) {
 
   // Create some boiler plate bookmarks
   const bookmarksList = document.getElementById("bookmarks")
-  createBookmark(bookmarksList, "Github", "https://github.com/AlexFlipnote/homepage_plusplus", {
+  const demoGroup = createBookmarkGroup(bookmarksList)
+  createBookmark(demoGroup, "Github", "https://github.com/AlexFlipnote/homepage_plusplus", {
     localFavicon: "images/icons/github.png"
   })
-  createBookmark(bookmarksList, "Discord", "https://discord.gg/yqb7vATbjH", {
+  createBookmark(demoGroup, "Discord", "https://discord.gg/yqb7vATbjH", {
     localFavicon: "images/icons/discord.png"
   })
 

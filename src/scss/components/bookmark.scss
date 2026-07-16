@@ -1,10 +1,11 @@
 #bookmarks {
   animation: enter-bottom 1s ease-in-out forwards;
+  align-items: flex-end;
   bottom: 1.5rem;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  gap: .5rem 1rem;
+  gap: 1.5rem 2.5rem;
   justify-content: center;
   left: 50%;
   list-style: none;
@@ -16,6 +17,14 @@
   transform: translateX(-50%) scale(var(--ui-scale-bookmarks));
   transform-origin: bottom center;
   width: 80%;
+
+  .bookmark-group {
+    display: flex;
+    flex-flow: column wrap;
+    align-content: center;
+    gap: .5rem;
+    max-height: calc(var(--bookmarks-rows-per-group, 1) * 5rem);
+  }
 
   a {
     align-items: center;

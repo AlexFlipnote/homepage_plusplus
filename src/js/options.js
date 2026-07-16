@@ -1,10 +1,11 @@
 import Sortable from "sortablejs"
 
-import { isFirefox, getVersion } from "./utils/browser.js"
+import { isFirefox, isExtension, getVersion } from "./utils/browser.js"
 import { WorldMap } from "./utils/openstreetmap.js"
 import { HexClock } from "./utils/timeManager.js"
 import { availableLanguages, translate, translationCoverage } from "./utils/i18n.js"
 import { bgGetAll, bgPut, bgDelete, bgClear } from "./utils/backgrounds.js"
+import { runMigrations } from "./utils/migrate.js"
 
 const defaultColour = "#ffffff"
 const defaultColourBlurBg = "#181818"
@@ -20,10 +21,16 @@ export const extensionSettings = {
   fmt_date: "",
   customfont: "",
   customfontgoogle: false,
-  bookmarks: [],
+  bookmarks: [], // legacy — kept so the render fallback can still read pre-2.8.0 data
+  bookmarksMigrated: false, // once true, bookmarkGroups is authoritative and legacy is ignored
+  bookmarkGroups: [],
+  bookmarksRowsPerGroup: 1,
   bookmarksFavicon: false,
   bookmarksTopSitesEnabled: false,
   bookmarksTopSitesAmount: 5,
+  bookmarksTopSitesMode: "separate",
+  bookmarksTopSitesGroup: 0,
+  bookmarksTopSitesOrder: 999,
   wEnable: false,
   wlat: 0,
   wlon: 0,
@@ -88,6 +95,10 @@ function applyTranslations(lang) {
     text = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     text = text.replace(/\*([^*]+)\*/g, "<em>$1</em>")
     el.innerHTML = text
+  })
+
+  document.querySelectorAll("[data-translate-placeholder]").forEach(el => {
+    el.placeholder = translate(lang, el.dataset.translatePlaceholder)
   })
 }
 
@@ -154,9 +165,8 @@ function readScale(id) {
 
 // Saves options to chrome.storage
 function saveOptions(message, css="") {
-  function fetchBookmarkInputs() {
-    const blist = document.getElementById("blist")
-    const bookmarkItems = blist.getElementsByClassName("bookmark-item")
+  function fetchGroupBookmarks(listEl) {
+    const bookmarkItems = listEl.getElementsByClassName("bookmark-item")
     const bookmarks = []
 
     for (var i = 0; i < bookmarkItems.length; i++) {
@@ -169,6 +179,24 @@ function saveOptions(message, css="") {
     return bookmarks
   }
 
+  function fetchBookmarkGroups() {
+    const groups = []
+    document.querySelectorAll("#bgroups .bookmark-group:not(.bookmark-group--auto)").forEach(groupEl => {
+      const name = groupEl.getElementsByClassName("bookmark-group-name")[0].value || "Bookmarks"
+      const list = groupEl.getElementsByClassName("bookmark-group-list")[0]
+      groups.push({ name: name, items: fetchGroupBookmarks(list) })
+    })
+    return groups
+  }
+
+  // Index of the auto (top sites) placeholder card among all group cards, so its
+  // position on the homepage can be restored when top sites use their own group.
+  function fetchTopSitesOrder() {
+    const cards = [...document.querySelectorAll("#bgroups .bookmark-group")]
+    const idx = cards.findIndex(el => el.classList.contains("bookmark-group--auto"))
+    return idx === -1 ? 999 : idx
+  }
+
   function saveColour(elName, defaultValue = defaultColour) {
     const el = document.getElementById(elName)
     if (el && el.value === defaultValue) {
@@ -176,6 +204,8 @@ function saveOptions(message, css="") {
     }
     return el ? el.value : null
   }
+
+  const topSites = readTopSitesPlacement()
 
   chrome.storage.local.set({
     language: document.getElementById("language").value,
@@ -200,8 +230,12 @@ function saveOptions(message, css="") {
     bookmarksFavicon: document.getElementById("bookmarksFavicon").checked,
     bookmarksTopSitesEnabled: document.getElementById("bookmarksTopSitesEnabled").checked,
     bookmarksTopSitesAmount: parseInt(document.getElementById("bookmarksTopSitesAmount").value) || 5,
+    bookmarksTopSitesMode: topSites.mode,
+    bookmarksTopSitesGroup: topSites.group,
+    bookmarksTopSitesOrder: fetchTopSitesOrder(),
+    bookmarksRowsPerGroup: parseInt(document.getElementById("bookmarksRowsPerGroup").value) || 1,
     customcss: document.getElementById("customcss").value,
-    bookmarks: fetchBookmarkInputs(),
+    bookmarkGroups: fetchBookmarkGroups(),
     notepadEnabled: document.getElementById("notepadEnabled").checked,
     notepadInWindow: document.getElementById("notepadInWindow").checked,
     notepadFont: document.getElementById("notepadFont").value,
@@ -233,9 +267,6 @@ function saveOptions(message, css="") {
 }
 
 function createMapInit(items) {
-  const getMap = document.getElementById("map")
-  getMap.style.display = "block"
-
   try {
     userMap.createMap("map", items.wlat, items.wlon)
   } catch {
@@ -251,11 +282,19 @@ function createMapInit(items) {
     wlon.textContent = lng.toFixed(4)
     saveOptions(`Weather location set: Lat ${lat.toFixed(4)}, Lon ${lng.toFixed(4)}`, "change")
   })
+
+  // Correct tile layout if the map was created while its section was hidden (0-size).
+  // Navigating to the weather section also invalidates, covering the normal load path.
+  requestAnimationFrame(() => { if (userMap.map) userMap.map.invalidateSize() })
 }
 
 // Restores select box and checkbox state using the preferences
 // stored in chrome.storage.
 function restoreOptions() {
+  // Run migrations here too — opening Settings before the new-tab page must not
+  // strand pre-migration data (see the 2.8.1 recovery migration). Reloads if it migrates.
+  if (isExtension) runMigrations()
+
   chrome.storage.local.get({ ...extensionSettings }, async (items) => {
     const language = document.getElementById("language")
     language.value = items.language
@@ -290,17 +329,13 @@ function restoreOptions() {
     wManualLocation.checked = items.wManualLocation
     wManualLocation.onchange = () => {
       saveOptions(`Weather manual location set: ${wManualLocation.checked}`, wManualLocation.checked ? "add" : "remove")
-
-      if (wManualLocation.checked) {
-        createMapInit(items)
-      } else {
-        document.getElementById("map").style.display = "none"
-      }
+      document.getElementById("map").classList.toggle("map--disabled", !wManualLocation.checked)
     }
 
-    if (items.wManualLocation) {
-      createMapInit(items)
-    }
+    // The map is always shown under the option; when manual location is off it is
+    // rendered as a dimmed, non-interactive preview (see .map--disabled).
+    createMapInit(items)
+    document.getElementById("map").classList.toggle("map--disabled", !items.wManualLocation)
 
     const wlat = document.getElementById("wlat")
     const wlon = document.getElementById("wlon")
@@ -414,7 +449,7 @@ function restoreOptions() {
 
     const bookmarksTopSitesEnabled = document.getElementById("bookmarksTopSitesEnabled")
     bookmarksTopSitesEnabled.checked = items.bookmarksTopSitesEnabled
-    bookmarksTopSitesEnabled.onchange = () => { saveOptions(`Bookmarks top sites set: ${bookmarksTopSitesEnabled.checked}`, bookmarksTopSitesEnabled.checked ? "add" : "remove") }
+    bookmarksTopSitesEnabled.onchange = () => { syncAutoGroupCard(); saveOptions(`Bookmarks top sites set: ${bookmarksTopSitesEnabled.checked}`, bookmarksTopSitesEnabled.checked ? "add" : "remove") }
 
     const bookmarksTopSitesAmount = document.getElementById("bookmarksTopSitesAmount")
     const bookmarksTopSitesAmountLabel = document.getElementById("bookmarksTopSitesAmount-label")
@@ -422,6 +457,19 @@ function restoreOptions() {
     if (bookmarksTopSitesAmountLabel) bookmarksTopSitesAmountLabel.textContent = items.bookmarksTopSitesAmount
     bookmarksTopSitesAmount.oninput = () => { if (bookmarksTopSitesAmountLabel) bookmarksTopSitesAmountLabel.textContent = bookmarksTopSitesAmount.value }
     bookmarksTopSitesAmount.onchange = () => { saveOptions(`Bookmarks top sites amount set: ${bookmarksTopSitesAmount.value}`, "change") }
+
+    const bookmarksRowsPerGroup = document.getElementById("bookmarksRowsPerGroup")
+    const bookmarksRowsPerGroupLabel = document.getElementById("bookmarksRowsPerGroup-label")
+    bookmarksRowsPerGroup.value = items.bookmarksRowsPerGroup
+    if (bookmarksRowsPerGroupLabel) bookmarksRowsPerGroupLabel.textContent = items.bookmarksRowsPerGroup
+    bookmarksRowsPerGroup.oninput = () => { if (bookmarksRowsPerGroupLabel) bookmarksRowsPerGroupLabel.textContent = bookmarksRowsPerGroup.value }
+    bookmarksRowsPerGroup.onchange = () => { saveOptions(`Bookmark rows per group set: ${bookmarksRowsPerGroup.value}`, "change") }
+
+    const bookmarksTopSitesPlacement = document.getElementById("bookmarksTopSitesPlacement")
+    bookmarksTopSitesPlacement.onchange = () => {
+      syncAutoGroupCard()
+      saveOptions("Top sites placement set", "change")
+    }
 
     const bookmarksFavicon = document.getElementById("bookmarksFavicon")
     bookmarksFavicon.checked = items.bookmarksFavicon
@@ -575,9 +623,21 @@ function restoreOptions() {
       document.getElementById("bmFavFirefox").style.display = "none"
     }
 
-    items.bookmarks.forEach(({ name, url }) => {
-      createBookmarkElement(name, url)
-    })
+    let groups = Array.isArray(items.bookmarkGroups) ? items.bookmarkGroups : []
+    // Only fall back to the legacy flat list before migration has completed; afterwards an
+    // empty bookmarkGroups is a deliberate state and must be respected.
+    if (!items.bookmarksMigrated && !groups.length) {
+      groups = [{ name: "Bookmarks", items: Array.isArray(items.bookmarks) ? items.bookmarks : [] }]
+    }
+    groups.forEach(({ name, items: bms }) => createGroupElement(name, bms || []))
+    initGroupsSortable()
+    refreshTopSitesPlacementSelect()
+    if (items.bookmarksTopSitesMode === "merge") {
+      const target = Math.min(items.bookmarksTopSitesGroup || 0, Math.max(0, groups.length - 1))
+      const placement = document.getElementById("bookmarksTopSitesPlacement")
+      placement.value = groups.length ? `merge:${target}` : "separate"
+    }
+    syncAutoGroupCard(items.bookmarksTopSitesOrder)
 
     const allPreviews = document.getElementById("custombg_previews")
     const existingBgs = await bgGetAll()
@@ -587,8 +647,7 @@ function restoreOptions() {
   })
 }
 
-function createBookmarkElement(bkey, burl) {
-  const blist = document.getElementById("blist")
+function createBookmarkElement(list, bkey, burl) {
   const container = document.createElement("div")
   container.classList.add("bookmark-item")
 
@@ -622,7 +681,199 @@ function createBookmarkElement(bkey, burl) {
   nameInput.onchange = () => { saveOptions("Changed bookmark name", "change") }
   urlInput.onchange = () => { saveOptions("Changed bookmark URL", "change") }
 
-  blist.appendChild(container)
+  list.appendChild(container)
+}
+
+function initGroupListSortable(list) {
+  new Sortable(list, {
+    group: "bookmarks",
+    animation: 150,
+    ghostClass: "sortable-ghost",
+    handle: ".drag",
+    onEnd: () => { saveOptions("Reordered bookmarks", "change") }
+  })
+}
+
+function initGroupsSortable() {
+  new Sortable(document.getElementById("bgroups"), {
+    animation: 150,
+    ghostClass: "sortable-ghost",
+    handle: ".bookmark-group-drag",
+    onEnd: () => { saveOptions("Reordered groups", "change") }
+  })
+}
+
+// Focus an input and briefly flash it, so the eye follows where the next entry goes.
+function highlightInput(el) {
+  if (!el) return
+  el.focus()
+  el.classList.remove("input-highlight")
+  void el.offsetWidth // restart the animation if it is already applied
+  el.classList.add("input-highlight")
+  el.addEventListener("animationend", () => el.classList.remove("input-highlight"), { once: true })
+}
+
+// Run an action when Enter is pressed in an input (mirrors clicking its add button).
+function addOnEnter(el, action) {
+  el.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault()
+      action()
+    }
+  })
+}
+
+function createGroupElement(name = "Bookmarks", bookmarks = []) {
+  const bgroups = document.getElementById("bgroups")
+  const lang = document.getElementById("language").value
+
+  const card = document.createElement("div")
+  card.classList.add("bookmark-group")
+
+  const header = document.createElement("div")
+  header.classList.add("bookmark-group-header")
+
+  const dragIcon = document.createElement("img")
+  dragIcon.src = "images/icons/drag.png"
+  dragIcon.classList.add("drag", "bookmark-group-drag")
+
+  const nameInput = document.createElement("input")
+  nameInput.type = "text"
+  nameInput.value = name
+  nameInput.classList.add("bookmark-group-name", "secondary")
+  nameInput.dataset.translatePlaceholder = "settings.bookmarks.groups.name_placeholder"
+  nameInput.placeholder = translate(lang, "settings.bookmarks.groups.name_placeholder")
+  nameInput.onchange = () => { refreshTopSitesPlacementSelect(); saveOptions("Changed group name", "change") }
+
+  const removeButton = document.createElement("img")
+  removeButton.src = "images/icons/delete.png"
+  removeButton.classList.add("remove", "bookmark-group-remove")
+  removeButton.onclick = () => { card.remove(); refreshTopSitesPlacementSelect(); saveOptions("Removed group", "remove") }
+
+  header.append(dragIcon, nameInput, removeButton)
+
+  const list = document.createElement("div")
+  list.classList.add("bookmark-container", "bookmark-group-list")
+  bookmarks.forEach(({ name: bName, url }) => createBookmarkElement(list, bName, url))
+
+  const addRow = document.createElement("div")
+  addRow.classList.add("bookmark-container")
+  const addItem = document.createElement("div")
+  addItem.classList.add("bookmark-item")
+
+  const addName = document.createElement("input")
+  addName.classList.add("secondary", "bookmark-add-name")
+  addName.dataset.translatePlaceholder = "settings.bookmarks.items.name_placeholder"
+  addName.placeholder = translate(lang, "settings.bookmarks.items.name_placeholder")
+
+  const addUrl = document.createElement("input")
+  addUrl.classList.add("secondary", "bookmark-add-url")
+  addUrl.dataset.translatePlaceholder = "settings.bookmarks.items.url_placeholder"
+  addUrl.placeholder = translate(lang, "settings.bookmarks.items.url_placeholder")
+
+  const addBtn = document.createElement("img")
+  addBtn.src = "images/icons/bookmark_add.png"
+  addBtn.classList.add("bookmark-add-button")
+  addBtn.alt = "Add bookmark"
+
+  const addBookmark = () => {
+    createBookmarkElement(list, addName.value || translate(lang, "settings.bookmarks.items.default_name"), addUrl.value || "#")
+    addName.value = ""
+    addUrl.value = ""
+    saveOptions("Added new bookmark")
+    highlightInput(addName) // ready for the next bookmark in this group
+  }
+  addBtn.onclick = addBookmark
+  addOnEnter(addName, addBookmark)
+  addOnEnter(addUrl, addBookmark)
+
+  addItem.append(addName, addUrl, addBtn)
+  addRow.append(addItem)
+
+  card.append(header, list, addRow)
+
+  // Keep the auto (top sites) placeholder below user groups by inserting above it
+  const auto = bgroups.querySelector(".bookmark-group--auto")
+  if (auto) bgroups.insertBefore(card, auto)
+  else bgroups.appendChild(card)
+
+  initGroupListSortable(list)
+  return card
+}
+
+// Rebuild the adaptive placement dropdown: "Own group" plus one "Merge into {name}" per group.
+// A single control avoids the show/hide UI churn of a separate mode + target selector.
+function refreshTopSitesPlacementSelect() {
+  const select = document.getElementById("bookmarksTopSitesPlacement")
+  if (!select) return
+  const lang = document.getElementById("language").value
+  const prev = select.value
+  select.innerHTML = ""
+
+  const own = document.createElement("option")
+  own.value = "separate"
+  own.textContent = translate(lang, "settings.bookmarks.top_sites.mode.separate")
+  select.appendChild(own)
+
+  const groups = document.querySelectorAll("#bgroups .bookmark-group:not(.bookmark-group--auto)")
+  groups.forEach((g, i) => {
+    const name = g.getElementsByClassName("bookmark-group-name")[0].value || `Group ${i + 1}`
+    const opt = document.createElement("option")
+    opt.value = `merge:${i}`
+    opt.textContent = translate(lang, "settings.bookmarks.top_sites.mode.merge", { name })
+    select.appendChild(opt)
+  })
+
+  // Keep the previous selection if it still exists, otherwise fall back to "Own group"
+  select.value = [...select.options].some(o => o.value === prev) ? prev : "separate"
+}
+
+// Read the placement dropdown into the stored mode + target group index
+function readTopSitesPlacement() {
+  const value = document.getElementById("bookmarksTopSitesPlacement").value
+  if (value.startsWith("merge:")) {
+    return { mode: "merge", group: parseInt(value.slice(6)) || 0 }
+  }
+  return { mode: "separate", group: 0 }
+}
+
+// Show/hide/reposition the draggable "Top Sites" placeholder card in the group list.
+// It only exists while top sites are enabled and set to their own (separate) group.
+function syncAutoGroupCard(order) {
+  const bgroups = document.getElementById("bgroups")
+  const enabled = document.getElementById("bookmarksTopSitesEnabled").checked
+  const placement = document.getElementById("bookmarksTopSitesPlacement").value
+  let card = bgroups.querySelector(".bookmark-group--auto")
+
+  if (!(enabled && placement === "separate")) {
+    if (card) card.remove()
+    return
+  }
+
+  if (!card) {
+    const lang = document.getElementById("language").value
+    card = document.createElement("div")
+    card.classList.add("bookmark-group", "bookmark-group--auto")
+
+    const header = document.createElement("div")
+    header.classList.add("bookmark-group-header")
+
+    const dragIcon = document.createElement("img")
+    dragIcon.src = "images/icons/drag.png"
+    dragIcon.classList.add("drag", "bookmark-group-drag")
+
+    const label = document.createElement("span")
+    label.classList.add("bookmark-group-auto-label")
+    label.textContent = translate(lang, "settings.bookmarks.top_sites.auto_label")
+
+    header.append(dragIcon, label)
+    card.append(header)
+  }
+
+  const cards = [...bgroups.querySelectorAll(".bookmark-group:not(.bookmark-group--auto)")]
+  const idx = Math.min(order ?? cards.length, cards.length)
+  if (idx >= cards.length) bgroups.appendChild(card)
+  else bgroups.insertBefore(card, cards[idx])
 }
 
 function createPreview(url, id, target) {
@@ -769,15 +1020,6 @@ if (document.getElementById("settings-notification")) {
     // Show live demo
     new HexClock(document.getElementById("hexbgdemobg"), {background:true}).start()
     new HexClock(document.getElementById("hexbgdemotext"), {text:true}).start()
-
-    new Sortable(document.getElementById("blist"), {
-      animation: 150,
-      ghostClass: "sortable-ghost",
-      handle: ".drag",
-      onEnd: () => {
-        saveOptions("Reordered bookmarks", "change")
-      }
-    })
   })
 
   // CustomBG Appender
@@ -797,15 +1039,18 @@ if (document.getElementById("settings-notification")) {
     document.getElementById("custombg_uploader").value = ""
   }
 
-  document.getElementById("add_bookmark").onclick = () => {
-    createBookmarkElement(
-      document.getElementById("bookmark_name").value || "New Bookmark",
-      document.getElementById("bookmark_url").value || "#"
-    )
-    document.getElementById("bookmark_name").value = ""
-    document.getElementById("bookmark_url").value = ""
-    saveOptions("Added new bookmark")
+  const addGroup = () => {
+    const nameInput = document.getElementById("group_name")
+    const lang = document.getElementById("language").value
+    const card = createGroupElement(nameInput.value || translate(lang, "settings.bookmarks.groups.default_name"), [])
+    nameInput.value = ""
+    refreshTopSitesPlacementSelect()
+    saveOptions("Added new group")
+    // Drop focus straight into the new group so bookmarks can be added right away
+    highlightInput(card.querySelector(".bookmark-add-name"))
   }
+  document.getElementById("add_group").onclick = addGroup
+  addOnEnter(document.getElementById("group_name"), addGroup)
 
   // CustomBG Remover
   document.body.onclick = async function (ev) {

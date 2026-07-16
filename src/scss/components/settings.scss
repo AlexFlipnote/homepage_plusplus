@@ -21,7 +21,7 @@ $sidebar-width: 220px;
 }
 
 .settings-sidebar {
-  background-color: var(--secondary);
+  background-color: var(--primary);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -141,7 +141,7 @@ $sidebar-width: 220px;
 }
 
 .settings-content {
-  background-color: var(--primary);
+  background-color: var(--secondary);
   box-sizing: border-box;
   flex: 1;
   overflow-y: auto;
@@ -203,7 +203,7 @@ $sidebar-width: 220px;
 }
 
 .setting-group {
-  background-color: var(--secondary);
+  background-color: var(--primary);
   border-radius: .5rem;
   margin-bottom: 1.5rem;
   overflow: hidden;
@@ -224,8 +224,6 @@ $sidebar-width: 220px;
   justify-content: space-between;
   padding: .9rem 1.1rem;
   transition: background-color .1s ease;
-
-  &:hover { background-color: rgba(255, 255, 255, .03); }
 
   &.setting-row--disabled {
     opacity: 0.4;
@@ -430,7 +428,7 @@ input[type="range"] {
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 
   .colour-sub-item {
-    background-color: var(--secondary);
+    background-color: var(--primary);
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -474,7 +472,7 @@ input[type="range"] {
 }
 
 .format-ref-table {
-  background-color: var(--secondary);
+  background-color: var(--primary);
   border-radius: .5rem;
   margin-top: .75rem;
   overflow: hidden;
@@ -617,14 +615,18 @@ $settings-gear-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/200
 
 
 #map {
-  display: none;
   height: 20rem;
-  width: 80%;
-  margin-top: 1rem;
+  width: 100%;
   border-radius: 1rem;
   box-shadow: 0 0 10px rgba(0, 0, 0, .5);
-  transition: box-shadow .3s ease-in-out;
+  transition: box-shadow .3s ease-in-out, opacity .3s ease-in-out;
   position: relative;
+
+  // Off state: visible as a dimmed preview, but not interactive (no drag / marker clicks)
+  &.map--disabled {
+    opacity: .25;
+    pointer-events: none;
+  }
 
   .map-coords {
     background-color: rgba(0, 0, 0, .5);
@@ -729,7 +731,7 @@ body:has(#window-notepad-section) .box-container { margin-bottom: 0; }
 
   .alert {
     animation: enter-notify-right 3s ease forwards;
-    background-color: var(--secondary);
+    background-color: var(--primary);
     border-radius: .5rem;
     box-shadow: 0 4px 16px rgba(0, 0, 0, .35);
     color: var(--font-primary);
@@ -910,6 +912,10 @@ body:has(#window-notepad-section) .box-container { margin-bottom: 0; }
   }
 }
 
+#customcss {
+  padding: .5rem .75rem;
+}
+
 .bookmark-container {
   align-items: center;
   display: flex;
@@ -942,7 +948,7 @@ body:has(#window-notepad-section) .box-container { margin-bottom: 0; }
       cursor: pointer;
     }
 
-    #add_bookmark {
+    #add_bookmark, .bookmark-add-button, #add_group {
       cursor: pointer;
       filter: brightness(0) saturate(100%) invert(89%) sepia(100%) saturate(1180%) hue-rotate(65deg) brightness(86%) contrast(83%);
       height: $bookmark-icon-sizes;
@@ -951,15 +957,142 @@ body:has(#window-notepad-section) .box-container { margin-bottom: 0; }
     }
 
     .bookmark-name, .bookmark-url,
-    #bookmark_name, #bookmark_url {
+    .bookmark-add-name, .bookmark-add-url,
+    #bookmark_name, #bookmark_url, #group_name {
       margin: 0 !important;
       background-color: transparent !important;
       height: 100% !important;
     }
 
-    .bookmark-url, #bookmark_url { width: 20rem !important; }
+    .bookmark-url, #bookmark_url,
+    .bookmark-add-url { width: 20rem !important; }
 
-    .bookmark-name, #bookmark_name { width: 10rem !important; }
+    .bookmark-name, #bookmark_name, #group_name,
+    .bookmark-add-name { width: 10rem !important; }
   }
+}
+
+// Width of an icon "logo" column (icon + its padding), used to line up the
+// drag / delete columns across the header and every row, incl. the drag-less add row.
+$group-icon-sizes: 1.5rem;
+$group-icon-pad: .5rem;
+$group-icon-col: $group-icon-sizes + $group-icon-pad * 2;
+
+#bgroups {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1rem 0;
+
+  .bookmark-group {
+    background: var(--primary);
+    border-radius: .75rem;
+    overflow: hidden; // let the header bg follow the rounded corners
+  }
+
+  // Full-bleed darker title bar: bg reaches corner to corner and kisses the top edge,
+  // while the content is inset so its icons line up with the body rows below.
+  .bookmark-group-header {
+    align-items: center;
+    background: var(--highlight);
+    display: flex;
+    gap: 0;
+    margin: 0;
+    padding: 0 $group-icon-pad;
+
+    .bookmark-group-name,
+    .bookmark-group-auto-label {
+      background-color: transparent !important;
+      flex: 1;
+      font-weight: bold;
+      margin: 0 !important;
+    }
+
+    .bookmark-group-auto-label {
+      font-style: italic;
+      font-weight: normal;
+      padding: $group-icon-pad 0;
+    }
+
+    .bookmark-group-drag {
+      cursor: grab;
+      height: $group-icon-sizes;
+      padding: $group-icon-pad;
+      width: $group-icon-sizes;
+    }
+
+    .bookmark-group-remove {
+      cursor: pointer;
+      filter: brightness(0) saturate(100%) invert(46%) sepia(46%) saturate(3229%) hue-rotate(333deg) brightness(89%) contrast(103%);
+      height: $group-icon-sizes;
+      padding: $group-icon-pad;
+      width: $group-icon-sizes;
+    }
+  }
+
+  // Body rows span the full width with drag / name / url / action in aligned columns
+  .bookmark-group > .bookmark-container {
+    padding: 0 $group-icon-pad;
+  }
+
+  .bookmark-item {
+    background: transparent;
+    box-sizing: border-box; // so the add-row's padding-left stays within the 100% width
+    justify-content: flex-start;
+    margin: .15rem 0;
+    width: 100%;
+
+    .bookmark-name, .bookmark-add-name {
+      flex: 0 0 11rem;
+      width: auto !important;
+    }
+
+    .bookmark-url, .bookmark-add-url {
+      flex: 1;
+      width: auto !important;
+    }
+  }
+
+  // The add-bookmark row has no drag handle — offset it so its fields align with the rows above
+  .bookmark-group > .bookmark-container:last-child .bookmark-item {
+    padding-left: $group-icon-col;
+  }
+
+  .bookmark-group--auto { opacity: .85; }
+}
+
+// "Add group" affordance: a ghosted fake group header hinting where new groups are made.
+// The 50%-opacity tint sits on the full-width bar so it reads as an empty group.
+.bookmark-group-add {
+  background: color-mix(in srgb, var(--primary) 50%, transparent);
+  border-radius: .75rem;
+  overflow: hidden;
+  padding: 0 $group-icon-pad;
+
+  .bookmark-item {
+    background: transparent !important;
+    box-sizing: border-box; // keep padding-left within the 100% width
+    justify-content: flex-start;
+    margin: 0 !important;
+    padding-left: $group-icon-col; // line the name up with real group names
+    width: 100%;
+
+    #group_name {
+      flex: 1;
+      font-weight: bold;
+      width: auto !important;
+    }
+  }
+}
+
+// Shared flash used after adding a group or bookmark to point at the next input
+@keyframes input-highlight-flash {
+  0% { box-shadow: 0 0 0 .15rem var(--info); }
+  100% { box-shadow: 0 0 0 .15rem transparent; }
+}
+
+.input-highlight {
+  animation: input-highlight-flash .8s ease-out;
+  border-radius: .35rem;
 }
 

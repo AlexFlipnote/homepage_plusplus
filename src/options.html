@@ -562,11 +562,12 @@
               </div>
               <input type="checkbox" id="wManualLocation">
             </div>
-          </div>
-
-          <div id="map">
-            <div class="map-coords">
-              <span id="wlat"></span>, <span id="wlon"></span>
+            <div class="setting-row setting-row--column">
+              <div id="map">
+                <div class="map-coords">
+                  <span id="wlat"></span>, <span id="wlon"></span>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -586,13 +587,25 @@
             </div>
           </div>
 
-          <div id="blist" class="bookmark-container"></div>
+          <div class="setting-group">
+            <div class="setting-row setting-row--column">
+              <div class="setting-label">
+                <span data-translate="settings.bookmarks.rows_per_group.title"></span>
+                <span class="setting-desc" data-translate="settings.bookmarks.rows_per_group.desc"></span>
+              </div>
+              <div class="slider-row">
+                <input type="range" id="bookmarksRowsPerGroup" min="1" max="2" step="1">
+                <span class="slider-value" id="bookmarksRowsPerGroup-label">1</span>
+              </div>
+            </div>
+          </div>
 
-          <div class="bookmark-container">
+          <div id="bgroups"></div>
+
+          <div class="bookmark-container bookmark-group-add">
             <div class="bookmark-item">
-              <input id="bookmark_name" class="secondary" placeholder="Bookmark name">
-              <input id="bookmark_url" class="secondary" placeholder="https://example.com">
-              <img id="add_bookmark" src="images/icons/bookmark_add.png" alt="Add bookmark">
+              <input id="group_name" class="secondary" data-translate-placeholder="settings.bookmarks.groups.name_placeholder">
+              <img id="add_group" src="images/icons/bookmark_add.png" alt="Add group">
             </div>
           </div>
 
@@ -615,6 +628,14 @@
                 <input type="range" id="bookmarksTopSitesAmount" min="1" max="10" step="1">
                 <span class="slider-value" id="bookmarksTopSitesAmount-label">5</span>
               </div>
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-row setting-row--column">
+              <div class="setting-label">
+                <span data-translate="settings.bookmarks.top_sites.mode.title"></span>
+                <span class="setting-desc" data-translate="settings.bookmarks.top_sites.mode.desc"></span>
+              </div>
+              <select id="bookmarksTopSitesPlacement" class="secondary"></select>
             </div>
           </div>
         </section>
@@ -667,7 +688,7 @@
           <p class="section-desc" data-translate="settings.customcss.desc"></p>
           <textarea
             id="customcss"
-            class="secondary-bg"
+            class="primary-bg"
             placeholder="Write some hot CSS in here...">
           </textarea>
         </section>
