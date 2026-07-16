@@ -10,6 +10,17 @@ function toFahrenheit(celsius) {
   return Math.round(celsius * (9 / 5) + 32)
 }
 
+// Round to 1 decimal, dropping a trailing ".0" (e.g. 26.3 -> "26.3", 26.0 -> "26")
+function formatTemp(value) {
+  return (Math.round(value * 10) / 10).toString()
+}
+
+function windDirection(degrees) {
+  const dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+  const ix = Math.round(degrees / (360 / dirs.length))
+  return dirs[ix % dirs.length]
+}
+
 class ForecastData {
   constructor(data, lang = "en", time = null, timezone = null) {
     this.temprature = data.instant.details.air_temperature
@@ -191,10 +202,14 @@ export async function getWeather(items, position, lang, skipCache = false) {
 
   const isFahrenheit = items.temp_type === "fahrenheit"
   if (isFahrenheit) {
-    wtemp.innerText = `${toFahrenheit(weatherData.temprature)} °F`
+    wtemp.innerText = `${formatTemp(weatherData.temprature * (9 / 5) + 32)} °F`
   } else {
-    wtemp.innerText = `${Math.round(weatherData.temprature)} °C`
+    wtemp.innerText = `${formatTemp(weatherData.temprature)} °C`
   }
+
+  document.querySelector("#whumidity span").innerText = `${Math.round(weatherData.humidity)}%`
+  document.querySelector("#wwind span").innerText =
+    `${Math.round(weatherData.wind_speed)} m/s ${windDirection(weatherData.wind_degrees)}`
 
   const forecastEl = document.getElementById("wforecast")
   if (items.wShowHourly !== false) {
