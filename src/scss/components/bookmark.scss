@@ -1,29 +1,64 @@
 #bookmarks {
-  animation: enter-bottom 1s ease-in-out forwards;
   align-items: flex-end;
+  animation: enter-bottom 1s ease-in-out forwards;
   bottom: 1.5rem;
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 1.5rem 2.5rem;
-  justify-content: center;
   left: 50%;
   list-style: none;
   margin: 0 auto;
   opacity: 0;
-  padding: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-top: 1rem;
   position: absolute;
+  scrollbar-color: transparent transparent;
+  scrollbar-width: thin;
   text-align: center;
-  transform: translateX(-50%) scale(var(--ui-scale-bookmarks));
   transform-origin: bottom center;
+  transform: translateX(-50%) scale(var(--ui-scale-bookmarks));
   width: 80%;
 
+  &:hover, &:focus-within {
+    scrollbar-color: rgba(255, 255, 255, .15) transparent;
+  }
+
+  &::-webkit-scrollbar {
+    height: .35rem;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 3rem;
+  }
+
+  &:hover::-webkit-scrollbar-thumb,
+  &:focus-within::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, .15);
+
+    &:hover { background-color: rgba(255, 255, 255, .3); }
+  }
+
+  &::before, &::after {
+    content: "";
+    margin: auto;
+  }
+
   .bookmark-group {
-    display: flex;
-    flex-flow: column wrap;
-    align-content: center;
+    display: grid;
+    flex-shrink: 0;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(var(--bookmark-group-columns, 1), auto);
+    grid-template-rows: repeat(var(--bookmarks-rows-per-group, 1), auto);
+    justify-content: center;
+    align-content: end;
     gap: .5rem;
-    max-height: calc(var(--bookmarks-rows-per-group, 1) * 5rem);
   }
 
   a {

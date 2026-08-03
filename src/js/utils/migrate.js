@@ -90,9 +90,6 @@ const migrations = [
   {
     version: "2.8.2",
     run(items) {
-      // Mark bookmark migration complete. Once set, bookmarkGroups is authoritative and the
-      // legacy `bookmarks` key is ignored — so deleting all groups sticks instead of the old
-      // list being resurrected by the render fallback.
       if (items.bookmarksMigrated) return null
       return { bookmarksMigrated: true }
     }

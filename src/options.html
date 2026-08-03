@@ -16,6 +16,10 @@
           <span>Homepage++ <span id="version-label"></span></span>
         </div>
 
+        <div class="sidebar-search">
+          <input type="search" id="settings-search" class="sidebar-search-input" placeholder="Search settings..." data-translate-placeholder="settings.nav.search_placeholder" autocomplete="off">
+        </div>
+
         <span class="sidebar-category" data-translate="settings.nav.category.general"></span>
         <button class="sidebar-item active" data-section="general" data-translate="settings.nav.section.general"></button>
         <button class="sidebar-item" data-section="timestamp" data-translate="settings.nav.section.timestamp"></button>
@@ -50,8 +54,10 @@
 
       <main class="settings-content">
 
+        <p class="search-empty-state" id="search-empty-state"></p>
+
         <!-- General -->
-        <section class="settings-section active" id="section-general">
+        <section class="settings-section" id="section-general">
           <h2 class="section-title" data-translate="settings.general.title"></h2>
 
           <div class="setting-group">
@@ -594,7 +600,7 @@
                 <span class="setting-desc" data-translate="settings.bookmarks.rows_per_group.desc"></span>
               </div>
               <div class="slider-row">
-                <input type="range" id="bookmarksRowsPerGroup" min="1" max="2" step="1">
+                <input type="range" id="bookmarksRowsPerGroup" min="1" max="3" step="1">
                 <span class="slider-value" id="bookmarksRowsPerGroup-label">1</span>
               </div>
             </div>

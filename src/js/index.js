@@ -77,6 +77,13 @@ function createBookmarkGroup(container) {
   return group
 }
 
+function applyGroupColumns(groupEl, rowsPerGroup) {
+  const rows = Math.max(1, parseInt(rowsPerGroup, 10) || 1)
+  const count = groupEl.children.length
+  const columns = Math.max(1, Math.ceil(count / rows))
+  groupEl.style.setProperty("--bookmark-group-columns", columns)
+}
+
 if (isExtension) {
   // Extension mode
   console.log(`☑️ Running in extension mode (v${getVersion()})`)
@@ -234,6 +241,13 @@ if (isExtension) {
     const bookmarks = document.getElementById("bookmarks")
     bookmarks.style.setProperty("--bookmarks-rows-per-group", items.bookmarksRowsPerGroup || 1)
 
+    // Vertical wheel input drives the horizontal scroll, since the group row only overflows sideways.
+    bookmarks.addEventListener("wheel", (e) => {
+      if (e.deltaY === 0 || bookmarks.scrollWidth <= bookmarks.clientWidth) return
+      e.preventDefault()
+      bookmarks.scrollLeft += e.deltaY
+    }, { passive: false })
+
     let groups = Array.isArray(items.bookmarkGroups) ? items.bookmarkGroups : []
     // Only fall back to the legacy flat list before migration has completed; afterwards an
     // empty bookmarkGroups is a deliberate state and must be respected.
@@ -252,6 +266,7 @@ if (isExtension) {
             bookmarksFavicon: items.bookmarksFavicon
           })
         })
+        applyGroupColumns(groupEl, items.bookmarksRowsPerGroup)
       })
     }
 
@@ -298,6 +313,7 @@ if (isExtension) {
             isAuto: true
           })
         }
+        applyGroupColumns(target, items.bookmarksRowsPerGroup)
       })
     }
 

@@ -109,6 +109,8 @@
   "settings.nav.section.customcss": "CSS personalizado",
   "settings.nav.section.backup": "Copia de seguridad",
   "settings.nav.section.translations": "Traducciones",
+  "settings.nav.search_placeholder": "Buscar en los ajustes...",
+  "settings.nav.search_no_results": "No se encontraron ajustes para \"{query}\".",
   "settings.translations.title": "Traducciones",
   "settings.translations.desc": "Cobertura de cada idioma comparado con el inglés (Reino Unido). Las claves que faltan vuelven al inglés. ¿Quieres contribuir? Visita {url:i18n} en GitHub.",
   "settings.general.title": "General",

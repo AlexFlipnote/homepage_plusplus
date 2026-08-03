@@ -109,6 +109,8 @@
   "settings.nav.section.customcss": "Custom CSS",
   "settings.nav.section.backup": "Backup",
   "settings.nav.section.translations": "Translations",
+  "settings.nav.search_placeholder": "Search settings...",
+  "settings.nav.search_no_results": "No settings found for \"{query}\".",
   "settings.translations.title": "Translations",
   "settings.translations.desc": "Coverage of each language compared to English (United Kingdom). Missing keys fall back to English. Want to contribute? Visit the {url:i18n} on GitHub.",
   "settings.general.title": "General",

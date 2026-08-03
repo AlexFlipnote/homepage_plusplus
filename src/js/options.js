@@ -21,7 +21,7 @@ export const extensionSettings = {
   fmt_date: "",
   customfont: "",
   customfontgoogle: false,
-  bookmarks: [], // legacy — kept so the render fallback can still read pre-2.8.0 data
+  bookmarks: [], // legacy
   bookmarksMigrated: false, // once true, bookmarkGroups is authoritative and legacy is ignored
   bookmarkGroups: [],
   bookmarksRowsPerGroup: 1,
@@ -291,8 +291,6 @@ function createMapInit(items) {
 // Restores select box and checkbox state using the preferences
 // stored in chrome.storage.
 function restoreOptions() {
-  // Run migrations here too — opening Settings before the new-tab page must not
-  // strand pre-migration data (see the 2.8.1 recovery migration). Reloads if it migrates.
   if (isExtension) runMigrations()
 
   chrome.storage.local.get({ ...extensionSettings }, async (items) => {
@@ -894,18 +892,6 @@ function createPreview(url, id, target) {
 // This part of the code loads only when touching options.html
 if (document.getElementById("settings-notification")) {
   document.addEventListener("DOMContentLoaded", () => {
-    const categoryMap = {
-      general: ["general", "timestamp"],
-      appearance: ["background", "colours", "font", "hexbg", "scale", "accessibility"],
-      features: ["weather", "bookmarks", "notepad"],
-      advanced: ["customcss", "backup", "translations"]
-    }
-
-    const sectionToCategory = {}
-    for (const [cat, sections] of Object.entries(categoryMap)) {
-      for (const s of sections) sectionToCategory[s] = cat
-    }
-
     const content = document.querySelector(".settings-content")
 
     function setActiveSidebarItem(name) {
@@ -914,43 +900,25 @@ if (document.getElementById("settings-notification")) {
       if (btn) btn.classList.add("active")
     }
 
-    function activateCategory(categoryName) {
-      document.querySelectorAll(".settings-section").forEach(s => s.classList.remove("active"))
-      const sections = categoryMap[categoryName] || []
-      sections.forEach(name => {
-        const s = document.getElementById("section-" + name)
-        if (s) s.classList.add("active")
-      })
-    }
-
     function navigateTo(sectionName) {
-      const category = sectionToCategory[sectionName]
-      if (!category) return
+      const target = document.getElementById("section-" + sectionName)
+      if (!target) return
 
-      activateCategory(category)
       setActiveSidebarItem(sectionName)
       location.hash = sectionName
 
-      requestAnimationFrame(() => {
-        const target = document.getElementById("section-" + sectionName)
-        if (!target) return
-        if (categoryMap[category][0] === sectionName) {
-          content.scrollTop = 0
-        } else {
-          const top = target.getBoundingClientRect().top - content.getBoundingClientRect().top + content.scrollTop
-          content.scrollTop = top
-        }
-        if (userMap.map) userMap.map.invalidateSize()
-      })
+      const top = target.getBoundingClientRect().top - content.getBoundingClientRect().top + content.scrollTop
+      content.scrollTop = top
+      if (userMap.map) userMap.map.invalidateSize()
     }
 
     content.addEventListener("scroll", () => {
       const threshold = 80
-      const activeSections = [...document.querySelectorAll(".settings-section.active")]
+      const allSections = [...document.querySelectorAll(".settings-section")]
       const contentTop = content.getBoundingClientRect().top
 
-      let current = activeSections[0]
-      for (const section of activeSections) {
+      let current = allSections[0]
+      for (const section of allSections) {
         const top = section.getBoundingClientRect().top - contentTop
         if (top <= threshold) current = section
       }
@@ -958,17 +926,155 @@ if (document.getElementById("settings-notification")) {
       if (current) setActiveSidebarItem(current.id.replace("section-", ""))
     })
 
+    const searchInput = document.getElementById("settings-search")
+    const searchEmptyState = document.getElementById("search-empty-state")
+    const SEARCHABLE_SELECTOR = ".setting-row, .colour-sub-item"
+
+    function escapeRegExp(str) {
+      return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    }
+
+    function clearSearchHighlights() {
+      content.querySelectorAll("mark.search-highlight").forEach(mark => {
+        const parent = mark.parentNode
+        parent.replaceChild(document.createTextNode(mark.textContent), mark)
+        parent.normalize()
+      })
+    }
+
+    // Wraps every case-insensitive occurrence of query in a <mark>, skipping
+    // text that lives inside form controls (input/select values aren't nodes we can mark).
+    function highlightMatches(root, query) {
+      const re = new RegExp(escapeRegExp(query), "ig")
+      const textNodes = []
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+        acceptNode(node) {
+          if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT
+          if (node.parentElement.closest("input, select, textarea, button, option")) return NodeFilter.FILTER_REJECT
+          return NodeFilter.FILTER_ACCEPT
+        }
+      })
+      let node
+      while ((node = walker.nextNode())) textNodes.push(node)
+
+      textNodes.forEach(textNode => {
+        re.lastIndex = 0
+        if (!re.test(textNode.nodeValue)) return
+        re.lastIndex = 0
+
+        const frag = document.createDocumentFragment()
+        let lastIndex = 0
+        let match
+        while ((match = re.exec(textNode.nodeValue))) {
+          frag.appendChild(document.createTextNode(textNode.nodeValue.slice(lastIndex, match.index)))
+          const mark = document.createElement("mark")
+          mark.className = "search-highlight"
+          mark.textContent = match[0]
+          frag.appendChild(mark)
+          lastIndex = match.index + match[0].length
+        }
+        frag.appendChild(document.createTextNode(textNode.nodeValue.slice(lastIndex)))
+        textNode.parentNode.replaceChild(frag, textNode)
+      })
+    }
+
+    // Filters every searchable setting row/item down to the ones matching `rawQuery`,
+    // hides whatever surrounds only-hidden rows (dividers, groups, subsection titles,
+    // whole sections), highlights matches in yellow, and dims sidebar tabs with no hits.
+    function applySearch(rawQuery) {
+      const query = rawQuery.trim()
+      clearSearchHighlights()
+
+      if (!query) {
+        content.classList.remove("search-active", "search-no-results")
+        content.querySelectorAll(".search-hide").forEach(el => el.classList.remove("search-hide"))
+        content.querySelectorAll(".section-no-match").forEach(el => el.classList.remove("section-no-match"))
+        document.querySelectorAll(".sidebar-item.search-dim").forEach(el => el.classList.remove("search-dim"))
+        return
+      }
+
+      content.classList.add("search-active")
+      const lowerQuery = query.toLowerCase()
+      const sectionHasMatch = {}
+
+      document.querySelectorAll(".settings-section").forEach(section => {
+        let sectionMatched = false
+
+        const titleEl = section.querySelector(".section-title")
+        if (titleEl && titleEl.textContent.toLowerCase().includes(lowerQuery)) sectionMatched = true
+
+        section.querySelectorAll(SEARCHABLE_SELECTOR).forEach(unit => {
+          const titleSpan = unit.querySelector(".setting-label > span:first-child")
+          const titleText = (titleSpan ? titleSpan.textContent : unit.textContent).trim().replace(/\s+/g, " ").toLowerCase()
+          const fullText = unit.textContent.trim().replace(/\s+/g, " ").toLowerCase()
+          const isMatch = fullText.includes(lowerQuery)
+          unit.classList.toggle("search-hide", !isMatch)
+          if (isMatch) highlightMatches(unit, query)
+          if (titleText.includes(lowerQuery)) sectionMatched = true
+        })
+
+        // Drop dividers touching a hidden row so no orphan line remains
+        section.querySelectorAll(".setting-divider").forEach(divider => {
+          const prev = divider.previousElementSibling
+          const next = divider.nextElementSibling
+          const hide = (prev && prev.classList.contains("search-hide")) || (next && next.classList.contains("search-hide"))
+          divider.classList.toggle("search-hide", Boolean(hide))
+        })
+
+        // Collapse whole groups (and their subsection heading) once every row inside is hidden
+        section.querySelectorAll(".setting-group").forEach(group => {
+          const units = group.querySelectorAll(SEARCHABLE_SELECTOR)
+          const noMatch = units.length > 0 && ![...units].some(u => !u.classList.contains("search-hide"))
+          group.classList.toggle("search-hide", noMatch)
+
+          const heading = group.previousElementSibling
+          if (heading && heading.classList.contains("subsection-title")) {
+            heading.classList.toggle("search-hide", noMatch)
+          }
+        })
+
+        section.classList.toggle("section-no-match", !sectionMatched)
+        sectionHasMatch[section.id] = sectionMatched
+      })
+
+      document.querySelectorAll(".sidebar-item").forEach(btn => {
+        const sectionId = "section-" + btn.dataset.section
+        btn.classList.toggle("search-dim", !sectionHasMatch[sectionId])
+      })
+
+      const anyMatch = Object.values(sectionHasMatch).some(Boolean)
+      content.classList.toggle("search-no-results", !anyMatch)
+      if (searchEmptyState) {
+        const lang = document.getElementById("language").value
+        searchEmptyState.textContent = translate(lang, "settings.nav.search_no_results", { query })
+      }
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener("input", () => applySearch(searchInput.value))
+      searchInput.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          searchInput.value = ""
+          applySearch("")
+          searchInput.blur()
+        }
+      })
+    }
+
     document.querySelectorAll(".sidebar-item").forEach(btn => {
       btn.addEventListener("click", () => {
+        if (searchInput && searchInput.value.trim()) {
+          searchInput.value = ""
+          applySearch("")
+        }
         navigateTo(btn.dataset.section.replace(/\s+/g, "_"))
       })
     })
 
     const hash = location.hash.slice(1)
-    if (hash && sectionToCategory[hash]) {
+    if (hash && document.getElementById("section-" + hash)) {
       navigateTo(hash)
     } else {
-      activateCategory("general")
       setActiveSidebarItem("general")
     }
 

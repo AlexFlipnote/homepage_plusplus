@@ -109,6 +109,8 @@
   "settings.nav.section.customcss": "Egendefinert CSS",
   "settings.nav.section.backup": "Sikkerhetskopi",
   "settings.nav.section.translations": "Oversettelser",
+  "settings.nav.search_placeholder": "Søk i innstillinger...",
+  "settings.nav.search_no_results": "Fant ingen innstillinger for \"{query}\".",
   "settings.translations.title": "Oversettelser",
   "settings.translations.desc": "Dekning av hvert språk sammenlignet med engelsk (Storbritannia). Manglende nøkler faller tilbake til engelsk. Vil du bidra? Besøk {url:i18n} på GitHub.",
   "settings.general.title": "Generelt",
