@@ -25,13 +25,16 @@ export class WorldMap {
       targetId,
       {
         preferCanvas: true,
-        attribution: "&copy; <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a>",
         maxBounds: [[-90, -180], [90, 180]],
         maxBoundsViscosity: 1.0
       }
     )
     this.map.setView([this.lat, this.lon], 3)
-    leaflet.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(this.map)
+    // OSM blocks tile requests without a Referer, so don't rely on the browser's default policy
+    leaflet.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a>",
+      referrerPolicy: "strict-origin-when-cross-origin"
+    }).addTo(this.map)
     this.marker = leaflet.marker([this.lat, this.lon], {
       icon: leaflet.icon({
         iconUrl: "images/icons/marker_icon.png",
