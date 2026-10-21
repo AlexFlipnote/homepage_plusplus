@@ -30,10 +30,9 @@ export class WorldMap {
       }
     )
     this.map.setView([this.lat, this.lon], 3)
-    // OSM blocks tile requests without a Referer, so don't rely on the browser's default policy
+    // OSM blocks tile requests without a Referer, sad...
     leaflet.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a>",
-      referrerPolicy: "strict-origin-when-cross-origin"
+      attribution: "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a>"
     }).addTo(this.map)
     this.marker = leaflet.marker([this.lat, this.lon], {
       icon: leaflet.icon({

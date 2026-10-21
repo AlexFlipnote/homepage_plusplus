@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "requestHeaders": [
+        { "header": "Referer", "operation": "set", "value": "https://alexflipnote.dev/homepage_plusplus/" }
+      ]
+    },
+    "condition": {
+      "requestDomains": ["tile.openstreetmap.org"],
+      "excludedInitiatorDomains": ["openstreetmap.org"],
+      "resourceTypes": ["image"]
+    }
+  }
+]
