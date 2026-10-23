@@ -6,7 +6,7 @@
   "demo.weather.location": "Pladsholder",
   "demo.weather.condition": "Solholder",
   "demo.install.title": "Installer udvidelse",
-  "demo.install": "Føj til {browser}",
+  "demo.install": "Føj til",
   "time.format.default": "%H:%M:%S",
   "time.format.default_12h": "%I:%M:%S %p",
   "date.format.default": "%e. %B %Y",

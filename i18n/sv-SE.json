@@ -6,7 +6,7 @@
   "demo.weather.location": "Platshållare",
   "demo.weather.condition": "Solhållare",
   "demo.install.title": "Installera tillägg",
-  "demo.install": "Lägg till i {browser}",
+  "demo.install": "Lägg till i",
   "time.format.default": "%H:%M:%S",
   "time.format.default_12h": "%I:%M:%S %p",
   "date.format.default": "%e. %B %Y",

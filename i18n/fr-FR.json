@@ -6,7 +6,7 @@
   "demo.weather.location": "Emplacement",
   "demo.weather.condition": "Sunholder",
   "demo.install.title": "Installer l'extension",
-  "demo.install": "Ajouter à {browser}",
+  "demo.install": "Ajouter à",
   "time.format.default": "%H:%M:%S",
   "time.format.default_12h": "%I:%M:%S %p",
   "date.format.default": "%e %B %Y",

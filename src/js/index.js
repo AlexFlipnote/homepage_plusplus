@@ -901,8 +901,7 @@ if (isExtension) {
   function downloadButton(language=undefined) {
     document.getElementById("install-box").style.display = "flex"
     document.getElementById("install-box-title").innerText = translate(language, "demo.install.title")
-    document.getElementById("install-button-chrome").innerText = translate(language, "demo.install", {browser: "Chrome/Edge"})
-    document.getElementById("install-button-firefox").innerText = translate(language, "demo.install", {browser: "Firefox"})
+    document.getElementById("install-buttons-select").innerText = translate(language, "demo.install")
   }
 
   downloadButton()

@@ -8,6 +8,7 @@ Goal is to make it as lightweight as possible, meaning no unnecessary bloat or d
 
 ## Platforms
 - [Chrome](https://chromewebstore.google.com/detail/npagigfpfilcemncemkphndcaigegcbk) (or literally any* Chromium-based browser)
+- [Edge](https://microsoftedge.microsoft.com/addons/detail/homepage/ohhmidpdgfjdknjihhpignhkaklhghfi)
 - [Firefox](https://addons.mozilla.org/addon/alexflipnote-homepage/)
 
 > [!WARNING]

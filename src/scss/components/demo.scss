@@ -137,12 +137,48 @@ $gear-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
     text-transform: uppercase;
   }
 
-  a {
-    color: #fff;
-    font-size: .9rem;
-    text-decoration: none;
-    transition: color .2s ease;
+  #install-buttons-select { margin-right: .25rem; }
 
-    &:hover { color: rgba(#2ecc71, 1); }
+  .install-links {
+    display: flex;
+    flex-direction: row;
+
+    a {
+      font-size: .9rem;
+      transition: color .2s ease-in-out,
+                  background-color .2s ease-in-out,
+                  text-decoration .2s ease-in-out;
+      padding: 0 .5rem;
+
+      $colour-chrome: #f1c40f;
+      $colour-edge: #3498db;
+      $colour-firefox: #e67e22;
+
+      &:hover { text-decoration: none; }
+
+      &.chrome {
+        color: $colour-chrome;
+        &:hover {
+          background-color: $colour-chrome;
+          color: #000;
+        }
+      }
+
+      &.edge {
+        color: $colour-edge;
+        &:hover {
+          background-color: $colour-edge;
+          color: #fff;
+        }
+      }
+
+      &.firefox {
+        color: $colour-firefox;
+        &:hover {
+          background-color: $colour-firefox;
+          color: #fff;
+        }
+      }
+    }
   }
 }
