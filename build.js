@@ -126,7 +126,8 @@ async function zip() {
   const zipSource = `raw_source_${timestamp}.zip`
   const archiveSource = archiver("zip", { zlib: { level: 9 } })
   archiveSource.pipe(createWriteStream(path.join(__dirname, "dist", zipSource)))
-  archiveSource.directory(path.join(__dirname, "src/"), false)
+  archiveSource.directory(path.join(__dirname, "src/"), "src")
+  archiveSource.directory(path.join(__dirname, "i18n/"), "i18n")
   for (const file of ["build.js", "package.json"])
     archiveSource.file(path.join(__dirname, file), { name: file })
   await archiveSource.finalize()
