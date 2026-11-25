@@ -1,0 +1,76 @@
+name: Publish extension to stores
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (authenticate and validate, but don't submit)"
+        type: boolean
+        default: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build and zip
+        run: npm run build
+
+      - name: Check tag matches manifest version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          manifest_version=$(node -p "require('./src/manifest.json').version")
+          if [ "v$manifest_version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match manifest version $manifest_version"
+            exit 1
+          fi
+
+      - name: Locate zips
+        run: |
+          plugin_zip=$(ls dist/plugin_*.zip | head -n1)
+          source_zip=$(ls dist/raw_source_*.zip | head -n1)
+          {
+            echo "CHROME_ZIP=$plugin_zip"
+            echo "EDGE_ZIP=$plugin_zip"
+            echo "FIREFOX_ZIP=$plugin_zip"
+            echo "FIREFOX_SOURCES_ZIP=$source_zip"
+          } >> "$GITHUB_ENV"
+
+      - name: Load store credentials
+        env:
+          SUBMIT_ENV: ${{ secrets.SUBMIT_ENV }}
+        run: |
+          if [ -z "$SUBMIT_ENV" ]; then
+            echo "::error::SUBMIT_ENV secret is not set"
+            exit 1
+          fi
+          # Values can span multiple lines (e.g. the Chrome private key), so parse
+          # properly and write each one to GITHUB_ENV with a heredoc delimiter
+          node -e '
+            const fs = require("fs")
+            const { randomUUID } = require("crypto")
+            const vars = require("util").parseEnv(process.env.SUBMIT_ENV)
+            const out = Object.entries(vars).map(([k, v]) => {
+              const delim = `EOF_${randomUUID()}`
+              return `${k}<<${delim}\n${v}\n${delim}\n`
+            }).join("")
+            fs.appendFileSync(process.env.GITHUB_ENV, out)
+            console.log(`Loaded ${Object.keys(vars).length} variables`)
+          '
+
+      - name: Submit to Chrome, Edge and Firefox
+        run: npx --yes publish-browser-extension@6.2.0 ${{ inputs.dry_run && '--dry-run' || '' }}
