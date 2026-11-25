@@ -362,8 +362,12 @@ if (isExtension) {
 
       notepadEl.removeAttribute("style")
 
-      let notepadWidth = items.notepadWidth || 300
-      let notepadHeight = items.notepadHeight || 220
+      const NOTEPAD_MIN_WIDTH = 240
+      const NOTEPAD_MIN_HEIGHT = 100
+      // Older versions could persist negative sizes (clamped against a 0x0 prerendered viewport)
+      const validSize = (v, min) => Number.isFinite(v) && v >= min
+      let notepadWidth = validSize(items.notepadWidth, NOTEPAD_MIN_WIDTH) ? items.notepadWidth : 300
+      let notepadHeight = validSize(items.notepadHeight, NOTEPAD_MIN_HEIGHT) ? items.notepadHeight : 220
       notepadEl.style.setProperty("--notepad-width", `${notepadWidth}px`)
       notepadEl.style.setProperty("--notepad-height", `${notepadHeight}px`)
 
@@ -387,8 +391,10 @@ if (isExtension) {
       }
 
       const clampNotepadSize = () => {
-        const clampedWidth = Math.min(notepadWidth, maxNotepadWidth())
-        const clampedHeight = Math.min(notepadHeight, maxNotepadHeight())
+        // Edge prerenders the new tab page with a 0x0 viewport, never clamp against that
+        if (!window.innerWidth || !window.innerHeight) return
+        const clampedWidth = Math.max(NOTEPAD_MIN_WIDTH, Math.min(notepadWidth, maxNotepadWidth()))
+        const clampedHeight = Math.max(NOTEPAD_MIN_HEIGHT, Math.min(notepadHeight, maxNotepadHeight()))
         if (clampedWidth !== notepadWidth || clampedHeight !== notepadHeight) {
           notepadWidth = clampedWidth
           notepadHeight = clampedHeight
